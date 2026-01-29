@@ -42,7 +42,10 @@ data class BlockedProfileSessionEntity(
     
     // Remote lock state
     val remoteLockActivatedTime: Long? = null,
-    val remoteLockActivatedBy: String? = null
+    val remoteLockActivatedBy: String? = null,
+
+    // Break/Pause state (for current active pause)
+    val breakStartTime: Long? = null
 ) {
     @Serializable
     data class PausedDuration(

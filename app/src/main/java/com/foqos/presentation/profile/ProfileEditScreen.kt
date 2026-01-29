@@ -113,7 +113,7 @@ fun ProfileEditScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { /* TODO: Navigate to NFC tag management */ }
+                        onClick = { navController.navigate("nfc_tags/${profile.id}") }
                     ) {
                         Row(
                             modifier = Modifier

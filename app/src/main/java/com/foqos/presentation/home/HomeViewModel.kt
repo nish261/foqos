@@ -6,6 +6,9 @@ import com.foqos.data.local.entity.BlockedProfileEntity
 import com.foqos.data.local.entity.BlockedProfileSessionEntity
 import com.foqos.data.repository.ProfileRepository
 import com.foqos.data.repository.SessionRepository
+import com.foqos.nfc.NFCActionHandler
+import com.foqos.nfc.NFCActionResult
+import com.foqos.nfc.NFCReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -14,8 +17,32 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    private val nfcReader: NFCReader,
+    private val nfcActionHandler: NFCActionHandler
 ) : ViewModel() {
+
+    init {
+        // Listen for NFC tags
+        viewModelScope.launch {
+            nfcReader.tagScanned.collect { tag ->
+                // Only process if there's an active session
+                if (activeSession.value != null) {
+                    nfcActionHandler.handleTag(tag)
+                }
+            }
+        }
+
+        // Listen for NFC action results
+        viewModelScope.launch {
+            nfcActionHandler.actionResult.collect { result ->
+                when (result) {
+                    is NFCActionResult.Success -> _uiState.value = HomeUiState.Success(result.message)
+                    is NFCActionResult.Error -> _uiState.value = HomeUiState.Error(result.message)
+                }
+            }
+        }
+    }
     
     val profiles: StateFlow<List<BlockedProfileEntity>> = profileRepository
         .getAllProfiles()
@@ -119,10 +146,43 @@ class HomeViewModel @Inject constructor(
     fun startBreak(duration: Int) {
         viewModelScope.launch {
             try {
-                // TODO: Implement break functionality
+                val session = sessionRepository.getActiveSession()
+                if (session == null) {
+                    _uiState.value = HomeUiState.Error("No active session")
+                    return@launch
+                }
+
+                if (session.breakStartTime != null) {
+                    _uiState.value = HomeUiState.Error("Already on break")
+                    return@launch
+                }
+
+                sessionRepository.startBreak(session.id)
                 _uiState.value = HomeUiState.Success("Break started")
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Failed to start break")
+            }
+        }
+    }
+
+    fun endBreak() {
+        viewModelScope.launch {
+            try {
+                val session = sessionRepository.getActiveSession()
+                if (session == null) {
+                    _uiState.value = HomeUiState.Error("No active session")
+                    return@launch
+                }
+
+                if (session.breakStartTime == null) {
+                    _uiState.value = HomeUiState.Error("Not on break")
+                    return@launch
+                }
+
+                sessionRepository.endBreak(session.id)
+                _uiState.value = HomeUiState.Success("Break ended")
+            } catch (e: Exception) {
+                _uiState.value = HomeUiState.Error(e.message ?: "Failed to end break")
             }
         }
     }
@@ -225,10 +285,17 @@ class HomeViewModel @Inject constructor(
                     return@launch
                 }
 
-                // TODO: Implement proper pause/resume with duration tracking
-                _uiState.value = HomeUiState.Success("Pause feature coming soon")
+                if (session.breakStartTime != null) {
+                    // Already paused, resume
+                    sessionRepository.endBreak(session.id)
+                    _uiState.value = HomeUiState.Success("Session resumed")
+                } else {
+                    // Not paused, pause
+                    sessionRepository.startBreak(session.id)
+                    _uiState.value = HomeUiState.Success("Session paused")
+                }
             } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Failed to pause session")
+                _uiState.value = HomeUiState.Error(e.message ?: "Failed to pause/resume session")
             }
         }
     }

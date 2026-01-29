@@ -49,7 +49,7 @@ fun ActiveSessionBanner(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Session Active",
+                    text = if (session.breakStartTime != null) "Session Paused" else "Session Active",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -65,7 +65,11 @@ fun ActiveSessionBanner(
                     text = TimeFormatter.formatElapsedTime(elapsedTime),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = if (session.breakStartTime != null) {
+                        MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    }
                 )
             }
             

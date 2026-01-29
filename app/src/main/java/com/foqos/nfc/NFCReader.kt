@@ -28,6 +28,7 @@ class NFCReader @Inject constructor() {
         onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
     )
     val tagScanned = _tagScanned.asSharedFlow()
+    val tagFlow = _tagScanned.asSharedFlow()  // Alias for compatibility
 
     suspend fun emitTag(tag: Tag) {
         _tagScanned.emit(tag)

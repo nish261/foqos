@@ -90,11 +90,18 @@ fun ProfileCard(
                 }
             }
             
-            // App count
-            if (profile.selectedApps.isNotEmpty()) {
+            // App and domain count
+            if (profile.selectedApps.isNotEmpty() || !profile.domains.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
+                val parts = mutableListOf<String>()
+                if (profile.selectedApps.isNotEmpty()) {
+                    parts.add("${profile.selectedApps.size} apps")
+                }
+                if (!profile.domains.isNullOrEmpty()) {
+                    parts.add("${profile.domains.size} websites")
+                }
                 Text(
-                    text = "${profile.selectedApps.size} apps blocked",
+                    text = parts.joinToString(" • ") + " blocked",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (isActive) {
                         MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)

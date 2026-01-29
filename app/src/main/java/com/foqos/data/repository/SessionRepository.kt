@@ -73,11 +73,27 @@ class SessionRepository @Inject constructor(
         sessionDao.updateSession(updatedSession)
     }
     
-    suspend fun addPause(sessionId: String, pauseStart: Long) {
+    suspend fun startBreak(sessionId: String) {
         val session = sessionDao.getSessionById(sessionId) ?: return
-        // Pause tracking would be more complex in real implementation
-        // For now, just update the session
-        sessionDao.updateSession(session)
+        val updatedSession = session.copy(
+            breakStartTime = System.currentTimeMillis()
+        )
+        sessionDao.updateSession(updatedSession)
+    }
+
+    suspend fun endBreak(sessionId: String) {
+        val session = sessionDao.getSessionById(sessionId) ?: return
+        if (session.breakStartTime != null) {
+            val pauseDuration = BlockedProfileSessionEntity.PausedDuration(
+                startTime = session.breakStartTime,
+                endTime = System.currentTimeMillis()
+            )
+            val updatedSession = session.copy(
+                breakStartTime = null,
+                pausedDurations = session.pausedDurations + pauseDuration
+            )
+            sessionDao.updateSession(updatedSession)
+        }
     }
     
     suspend fun updateEmergencyUnlockAttempts(

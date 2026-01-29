@@ -120,6 +120,20 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Pause/Resume button
+                        FilledTonalButton(
+                            onClick = { viewModel.pauseSession() },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                if (activeSession.breakStartTime != null) Icons.Filled.PlayArrow else Icons.Filled.Stop,
+                                contentDescription = if (activeSession.breakStartTime != null) "Resume" else "Pause",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(if (activeSession.breakStartTime != null) "Resume" else "Pause")
+                        }
+
                         // Emergency unlock button
                         OutlinedButton(
                             onClick = { showEmergencyDialog = true },
@@ -136,7 +150,7 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Emergency")
                         }
-                        
+
                         // Remote lock toggle button
                         if (activeSession.remoteLockActivatedTime == null) {
                             FilledTonalButton(

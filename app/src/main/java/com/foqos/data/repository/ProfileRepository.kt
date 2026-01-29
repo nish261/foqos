@@ -2,7 +2,10 @@ package com.foqos.data.repository
 
 import com.foqos.data.local.dao.BlockedProfileDao
 import com.foqos.data.local.entity.BlockedProfileEntity
+import com.foqos.domain.model.NFCTagConfig
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -58,5 +61,32 @@ class ProfileRepository @Inject constructor(
         )
         profileDao.insertProfile(profile)
         return profile
+    }
+
+    // NFC Tag Management
+    suspend fun getNFCTags(profileId: String): List<NFCTagConfig> {
+        val profile = getProfileById(profileId) ?: return emptyList()
+        return profile.nfcTagsJson?.let {
+            try {
+                Json.decodeFromString<List<NFCTagConfig>>(it)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } ?: emptyList()
+    }
+
+    suspend fun addNFCTag(profileId: String, tag: NFCTagConfig) {
+        val profile = getProfileById(profileId) ?: return
+        val currentTags = getNFCTags(profileId).toMutableList()
+        currentTags.add(tag)
+        val tagsJson = Json.encodeToString(currentTags)
+        updateProfile(profile.copy(nfcTagsJson = tagsJson))
+    }
+
+    suspend fun removeNFCTag(profileId: String, tagId: String) {
+        val profile = getProfileById(profileId) ?: return
+        val currentTags = getNFCTags(profileId).filter { it.tagId != tagId }
+        val tagsJson = if (currentTags.isEmpty()) null else Json.encodeToString(currentTags)
+        updateProfile(profile.copy(nfcTagsJson = tagsJson))
     }
 }

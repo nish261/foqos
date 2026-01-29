@@ -21,7 +21,8 @@ fun ActiveSessionBanner(
     profile: BlockedProfileEntity,
     session: BlockedProfileSessionEntity,
     onStop: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    remoteLockActive: Boolean = false
 ) {
     // Update elapsed time every second
     var elapsedTime by remember { mutableStateOf(session.getTotalDuration()) }
@@ -68,20 +69,39 @@ fun ActiveSessionBanner(
                 )
             }
             
-            FilledTonalButton(
-                onClick = onStop,
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                )
-            ) {
-                Icon(
-                    Icons.Filled.Stop,
-                    contentDescription = "Stop Session",
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Stop")
+            if (remoteLockActive) {
+                FilledTonalButton(
+                    onClick = { /* Do nothing - remote lock active */ },
+                    enabled = false,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                ) {
+                    Icon(
+                        Icons.Filled.Stop,
+                        contentDescription = "Stop Disabled",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Locked")
+                }
+            } else {
+                FilledTonalButton(
+                    onClick = onStop,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Icon(
+                        Icons.Filled.Stop,
+                        contentDescription = "Stop Session",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Stop")
+                }
             }
         }
     }

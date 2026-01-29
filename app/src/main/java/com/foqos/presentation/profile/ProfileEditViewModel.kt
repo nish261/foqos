@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.foqos.data.local.entity.BlockedProfileEntity
 import com.foqos.data.repository.ProfileRepository
 import com.foqos.domain.model.BlockingStrategy
+import com.foqos.domain.model.NFCTagConfig
+import com.foqos.domain.model.NFCTagMode
 import com.foqos.util.AppListProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -38,10 +40,14 @@ class ProfileEditViewModel @Inject constructor(
     
     private val _uiState = MutableStateFlow<ProfileEditUiState>(ProfileEditUiState.Loading)
     val uiState: StateFlow<ProfileEditUiState> = _uiState.asStateFlow()
-    
+
+    private val _nfcTags = MutableStateFlow<List<NFCTagConfig>>(emptyList())
+    val nfcTags: StateFlow<List<NFCTagConfig>> = _nfcTags.asStateFlow()
+
     init {
         loadProfile()
         loadAvailableApps()
+        loadNFCTags()
     }
     
     private fun loadProfile() {
@@ -101,7 +107,7 @@ class ProfileEditViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _uiState.value = ProfileEditUiState.Saving
-                
+
                 val profile = _profile.value
                 if (profile != null) {
                     // Update existing
@@ -122,11 +128,37 @@ class ProfileEditViewModel @Inject constructor(
                         domains = _domains.value.takeIf { it.isNotEmpty() }
                     )
                 }
-                
+
                 _uiState.value = ProfileEditUiState.Saved
             } catch (e: Exception) {
                 _uiState.value = ProfileEditUiState.Error(e.message ?: "Failed to save profile")
             }
+        }
+    }
+
+    private fun loadNFCTags() {
+        if (profileId != null) {
+            viewModelScope.launch {
+                val tags = profileRepository.getNFCTags(profileId)
+                _nfcTags.value = tags
+            }
+        }
+    }
+
+    fun addNFCTag(mode: NFCTagMode, label: String?, tagId: String) {
+        if (profileId == null) return
+        viewModelScope.launch {
+            val tag = NFCTagConfig(tagId = tagId, mode = mode, label = label)
+            profileRepository.addNFCTag(profileId, tag)
+            loadNFCTags()
+        }
+    }
+
+    fun removeNFCTag(tagId: String) {
+        if (profileId == null) return
+        viewModelScope.launch {
+            profileRepository.removeNFCTag(profileId, tagId)
+            loadNFCTags()
         }
     }
 }

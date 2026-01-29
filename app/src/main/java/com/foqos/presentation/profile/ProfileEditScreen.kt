@@ -29,8 +29,9 @@ fun ProfileEditScreen(
     val selectedApps by viewModel.selectedApps.collectAsState()
     val selectedStrategy by viewModel.selectedStrategy.collectAsState()
     val domains by viewModel.domains.collectAsState()
+    val nfcTags by viewModel.nfcTags.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
-    
+
     var profileName by remember { mutableStateOf(profile?.name ?: "") }
     var showStrategyDialog by remember { mutableStateOf(false) }
     var showDomainDialog by remember { mutableStateOf(false) }
@@ -106,7 +107,35 @@ fun ProfileEditScreen(
                     }
                 }
             }
-            
+
+            // NFC Tag Management
+            if (profile != null && selectedStrategy.id == "nfc") {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { /* TODO: Navigate to NFC tag management */ }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("NFC Tags", style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    "${nfcTags.size} tag(s) configured",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Icon(Icons.Filled.Nfc, "Manage NFC Tags")
+                        }
+                    }
+                }
+            }
+
             // App Selection Header
             item {
                 Row(

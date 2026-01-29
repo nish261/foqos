@@ -95,6 +95,12 @@ class HomeViewModel @Inject constructor(
                 _uiState.value = HomeUiState.Loading
                 val session = sessionRepository.getActiveSession()
                 if (session != null) {
+                    // Check if remote lock is active
+                    if (session.remoteLockActivatedTime != null) {
+                        _uiState.value = HomeUiState.Error("Remote lock active. Use NFC to unlock")
+                        return@launch
+                    }
+
                     sessionRepository.endSession(session.id)
                     _uiState.value = HomeUiState.Success("Session ended")
                 } else {
@@ -125,25 +131,104 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val session = sessionRepository.getActiveSession()
-                if (session != null) {
-                    sessionRepository.endSession(session.id)
-                    _uiState.value = HomeUiState.Success("Emergency unlock successful")
-                } else {
+                if (session == null) {
                     _uiState.value = HomeUiState.Error("No active session")
+                    return@launch
                 }
+
+                // Get profile to check max attempts
+                val profile = profileRepository.getProfileById(session.profileId)
+                if (profile == null || !profile.emergencyUnlockEnabled) {
+                    _uiState.value = HomeUiState.Error("Emergency unlock not enabled")
+                    return@launch
+                }
+
+                // Check cooldown
+                val now = System.currentTimeMillis()
+                if (session.emergencyUnlockCooldownUntil != null && now < session.emergencyUnlockCooldownUntil) {
+                    val remainingMinutes = ((session.emergencyUnlockCooldownUntil - now) / 60000).toInt()
+                    _uiState.value = HomeUiState.Error("Cooldown active. Wait $remainingMinutes more minutes")
+                    return@launch
+                }
+
+                // Check attempts remaining
+                val attemptsUsed = session.emergencyUnlockAttemptsUsed
+                val maxAttempts = profile.emergencyUnlockAttempts
+
+                if (attemptsUsed >= maxAttempts) {
+                    // Apply cooldown
+                    val cooldownUntil = now + (profile.emergencyUnlockCooldownMinutes * 60000L)
+                    sessionRepository.updateEmergencyUnlockAttempts(session.id, attemptsUsed, cooldownUntil)
+                    _uiState.value = HomeUiState.Error("All attempts used. ${profile.emergencyUnlockCooldownMinutes}min cooldown activated")
+                    return@launch
+                }
+
+                // Use attempt
+                val newAttemptsUsed = attemptsUsed + 1
+                val cooldownUntil = if (newAttemptsUsed >= maxAttempts) {
+                    now + (profile.emergencyUnlockCooldownMinutes * 60000L)
+                } else null
+
+                sessionRepository.updateEmergencyUnlockAttempts(session.id, newAttemptsUsed, cooldownUntil)
+
+                // End session
+                sessionRepository.endSession(session.id)
+
+                val remaining = maxAttempts - newAttemptsUsed
+                val message = if (remaining > 0) {
+                    "Emergency unlock used. $remaining attempts remaining"
+                } else {
+                    "Last emergency attempt used. Cooldown activated"
+                }
+                _uiState.value = HomeUiState.Success(message)
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Emergency unlock failed")
             }
         }
     }
 
-    fun activateRemoteLock(code: String) {
+    fun activateRemoteLock(deviceName: String) {
         viewModelScope.launch {
             try {
-                // TODO: Implement remote lock functionality
-                _uiState.value = HomeUiState.Success("Remote lock activated")
+                val session = sessionRepository.getActiveSession()
+                if (session == null) {
+                    _uiState.value = HomeUiState.Error("No active session")
+                    return@launch
+                }
+
+                // Check if profile has NFC tags configured
+                val profile = profileRepository.getProfileById(session.profileId)
+                if (profile?.nfcTagsJson.isNullOrBlank()) {
+                    _uiState.value = HomeUiState.Error("No NFC tags configured. Add NFC unlock tag first")
+                    return@launch
+                }
+
+                if (profile?.remoteLockEnabled != true) {
+                    _uiState.value = HomeUiState.Error("Remote lock not enabled in profile")
+                    return@launch
+                }
+
+                sessionRepository.activateRemoteLock(session.id, deviceName)
+                _uiState.value = HomeUiState.Success("Remote lock activated. NFC required to unlock")
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Failed to activate remote lock")
+            }
+        }
+    }
+
+    fun pauseSession() {
+        viewModelScope.launch {
+            try {
+                val session = sessionRepository.getActiveSession()
+                if (session == null) {
+                    _uiState.value = HomeUiState.Error("No active session")
+                    return@launch
+                }
+
+                // TODO: Implement proper pause/resume with duration tracking
+                _uiState.value = HomeUiState.Success("Pause feature coming soon")
+            } catch (e: Exception) {
+                _uiState.value = HomeUiState.Error(e.message ?: "Failed to pause session")
             }
         }
     }

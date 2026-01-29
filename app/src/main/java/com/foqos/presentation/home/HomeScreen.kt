@@ -110,6 +110,7 @@ fun HomeScreen(
                             profile = it,
                             session = activeSession,
                             onStop = { viewModel.stopSession() },
+                            remoteLockActive = activeSession.remoteLockActivatedTime != null,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

@@ -4,7 +4,7 @@
 
 **Best for most users - Direct APK download, no extraction needed!**
 
-1. Go to **[Releases](https://github.com/nish261/sonahai/releases)**
+1. Go to **[Releases](https://github.com/nish261/foqos/releases)**
 2. Click the latest release
 3. Download `foqos-vX.X.X.apk` from the Assets section
 4. Install on your device
@@ -20,7 +20,7 @@
 ⚠️ **Important:** GitHub Actions artifacts are **ALWAYS ZIPPED**
 
 ### Steps:
-1. Go to **[Actions](https://github.com/nish261/sonahai/actions)**
+1. Go to **[Actions](https://github.com/nish261/foqos/actions)**
 2. Click the latest successful workflow (green checkmark ✓)
 3. Scroll to **Artifacts** section at the bottom
 4. Download `foqos-debug.zip` or `foqos-release-unsigned.zip`

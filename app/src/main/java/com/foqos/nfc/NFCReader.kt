@@ -6,6 +6,7 @@ import android.nfc.tech.Ndef
 import android.nfc.tech.NdefFormatable
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import javax.inject.Inject
@@ -20,6 +21,16 @@ class NFCReader @Inject constructor() {
     
     companion object {
         private const val TAG = "NFCReader"
+    }
+
+    private val _tagScanned = kotlinx.coroutines.flow.MutableSharedFlow<Tag>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
+    )
+    val tagScanned = _tagScanned.asSharedFlow()
+
+    suspend fun emitTag(tag: Tag) {
+        _tagScanned.emit(tag)
     }
     
     /**

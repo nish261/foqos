@@ -1,0 +1,63 @@
+name: Build and Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v1.0.0
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+      
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+    - name: Rename APK
+      run: |
+        mv app/build/outputs/apk/release/app-release-unsigned.apk \
+           foqos-${{ steps.get_version.outputs.VERSION }}.apk
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: foqos-${{ steps.get_version.outputs.VERSION }}.apk
+        body: |
+          ## Foqos Android Release ${{ steps.get_version.outputs.VERSION }}
+          
+          ### Download & Install
+          1. Download `foqos-${{ steps.get_version.outputs.VERSION }}.apk` below
+          2. Enable "Install from Unknown Sources" in Android settings
+          3. Install the APK
+          4. Grant required permissions (Accessibility, Usage Stats)
+          
+          ### What's New
+          - See commit history for changes
+          
+          ### Installation Guide
+          Full setup instructions: [Installation Guide](https://github.com/nish261/sonahai/blob/main/INSTALLATION.md)
+          
+          ---
+          
+          **Note:** This is an unsigned APK for testing. For production use, you should sign it with your own keystore.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Foqos</string>
+    <string name="app_description">Focus with purpose</string>
+    
+    <!-- Permissions -->
+    <string name="permission_accessibility_title">Accessibility Permission Required</string>
+    <string name="permission_accessibility_desc">Foqos needs accessibility permission to block apps during focus sessions</string>
+    <string name="permission_usage_stats_title">Usage Stats Permission Required</string>
+    <string name="permission_usage_stats_desc">Foqos needs usage stats permission to monitor app usage</string>
+    <string name="permission_vpn_title">VPN Permission Required</string>
+    <string name="permission_vpn_desc">Foqos needs VPN permission to block distracting websites</string>
+    <string name="permission_nfc_title">NFC Required</string>
+    <string name="permission_nfc_desc">Enable NFC in your device settings to use NFC tags</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_insights">Insights</string>
+    <string name="nav_settings">Settings</string>
+    
+    <!-- Blocking Strategies -->
+    <string name="strategy_nfc">NFC Tag</string>
+    <string name="strategy_qr">QR Code</string>
+    <string name="strategy_manual">Manual</string>
+    <string name="strategy_nfc_manual">NFC + Manual</string>
+    <string name="strategy_qr_manual">QR + Manual</string>
+    <string name="strategy_nfc_timer">NFC + Timer</string>
+    <string name="strategy_qr_timer">QR + Timer</string>
+    
+    <!-- Actions -->
+    <string name="action_start">Start Session</string>
+    <string name="action_stop">Stop Session</string>
+    <string name="action_break">Take Break</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_scan_nfc">Scan NFC Tag</string>
+    <string name="action_scan_qr">Scan QR Code</string>
+    <string name="action_write_nfc">Write NFC Tag</string>
+    <string name="action_generate_qr">Generate QR Code</string>
+    
+    <!-- Notifications -->
+    <string name="notif_channel_session">Focus Sessions</string>
+    <string name="notif_channel_reminder">Reminders</string>
+    <string name="notif_session_active">Focus session active</string>
+    <string name="notif_session_started">Focus session started</string>
+    <string name="notif_session_ended">Focus session ended</string>
+    <string name="notif_break_time">Break time!</string>
+    <string name="notif_action_stop">Stop</string>
+    <string name="notif_action_break">Break</string>
+    
+    <!-- Profile -->
+    <string name="profile_new">New Profile</string>
+    <string name="profile_name">Profile Name</string>
+    <string name="profile_select_apps">Select Apps to Block</string>
+    <string name="profile_select_strategy">Blocking Strategy</string>
+    <string name="profile_settings">Profile Settings</string>
+    
+    <!-- Emergency -->
+    <string name="emergency_stop_title">Emergency Stop</string>
+    <string name="emergency_stop_desc">This will end your current focus session immediately</string>
+    <string name="emergency_stop_confirm">Yes, Stop Session</string>
+</resources>

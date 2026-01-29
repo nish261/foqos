@@ -174,7 +174,9 @@ class HomeViewModel @Inject constructor(
                     strategyId = profile.blockingStrategyId,
                     blockedApps = profile.selectedApps,
                     blockedDomains = profile.domains ?: emptyList(),
-                    timerDurationMinutes = timerDurationMinutes
+                    timerDurationMinutes = timerDurationMinutes,
+                    appsAllowMode = profile.appsAllowMode,
+                    domainsAllowMode = profile.domainsAllowMode
                 )
 
                 // Schedule timer expiration worker if timer is set

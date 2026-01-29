@@ -33,6 +33,7 @@ class WebsiteBlockerVpnService : VpnService() {
     private var vpnInterface: ParcelFileDescriptor? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var blockedDomains: Set<String> = emptySet()
+    private var domainsAllowMode = false  // If true, only allow domains in the list
     private var isRunning = false
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -61,6 +62,7 @@ class WebsiteBlockerVpnService : VpnService() {
             sessionRepository.getActiveSessionFlow().collect { session ->
                 if (session != null && session.blockedDomains.isNotEmpty()) {
                     blockedDomains = session.blockedDomains.toSet()
+                    domainsAllowMode = session.domainsAllowMode
                     if (!isRunning) {
                         startVpn()
                     }
@@ -157,15 +159,15 @@ class WebsiteBlockerVpnService : VpnService() {
             // Check DNS queries
             if (ipInfo.destPort == 53) {
                 val domain = com.foqos.util.PacketInspector.parseDNSQuery(packet, ipInfo)
-                if (domain != null && com.foqos.util.PacketInspector.isDomainBlocked(domain, blockedDomains)) {
+                if (domain != null && shouldBlockDomain(domain)) {
                     return true
                 }
             }
-            
+
             // Check HTTPS/TLS SNI for encrypted traffic
             if (ipInfo.destPort == 443) {
                 val sni = com.foqos.util.PacketInspector.extractSNI(packet, ipInfo)
-                if (sni != null && com.foqos.util.PacketInspector.isDomainBlocked(sni, blockedDomains)) {
+                if (sni != null && shouldBlockDomain(sni)) {
                     return true
                 }
             }
@@ -181,7 +183,22 @@ class WebsiteBlockerVpnService : VpnService() {
             return false
         }
     }
-    
+
+    /**
+     * Check if a domain should be blocked based on allow/block mode.
+     */
+    private fun shouldBlockDomain(domain: String): Boolean {
+        val isInList = com.foqos.util.PacketInspector.isDomainBlocked(domain, blockedDomains)
+
+        return if (domainsAllowMode) {
+            // Allow mode: block everything EXCEPT domains in the list
+            !isInList
+        } else {
+            // Block mode: block domains IN the list
+            isInList
+        }
+    }
+
     companion object {
         const val ACTION_START_VPN = "com.foqos.START_VPN"
         const val ACTION_STOP_VPN = "com.foqos.STOP_VPN"

@@ -34,6 +34,10 @@ data class BlockedProfileSessionEntity(
     val blockedApps: List<String> = emptyList(),
     val blockedDomains: List<String> = emptyList(),
     val timerDurationMinutes: Int? = null,
+
+    // Allow Mode flags
+    val appsAllowMode: Boolean = false,        // If true, only allow apps in blockedApps list
+    val domainsAllowMode: Boolean = false,     // If true, only allow domains in blockedDomains list
     
     // Emergency unlock tracking
     val emergencyUnlockAttemptsUsed: Int = 0,

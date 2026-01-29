@@ -102,7 +102,19 @@ class ProfileEditViewModel @Inject constructor(
         current.remove(domain)
         _domains.value = current
     }
-    
+
+    fun toggleAppsAllowMode() {
+        _profile.value = _profile.value?.copy(
+            appsAllowMode = !(_profile.value?.appsAllowMode ?: false)
+        )
+    }
+
+    fun toggleDomainsAllowMode() {
+        _profile.value = _profile.value?.copy(
+            domainsAllowMode = !(_profile.value?.domainsAllowMode ?: false)
+        )
+    }
+
     fun saveProfile(name: String) {
         viewModelScope.launch {
             try {
@@ -116,7 +128,9 @@ class ProfileEditViewModel @Inject constructor(
                             name = name,
                             selectedApps = _selectedApps.value.toList(),
                             blockingStrategyId = _selectedStrategy.value.id,
-                            domains = _domains.value.takeIf { it.isNotEmpty() }
+                            domains = _domains.value.takeIf { it.isNotEmpty() },
+                            appsAllowMode = profile.appsAllowMode,
+                            domainsAllowMode = profile.domainsAllowMode
                         )
                     )
                 } else {

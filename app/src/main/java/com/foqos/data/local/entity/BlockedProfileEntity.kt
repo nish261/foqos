@@ -26,9 +26,11 @@ data class BlockedProfileEntity(
     val enableBreaks: Boolean = false,
     val breakTimeInMinutes: Int = 15,
     val enableStrictMode: Boolean = false,
-    val enableAllowMode: Boolean = false,
-    val enableAllowModeDomains: Boolean = false,
     val enableWebBlocking: Boolean = true,
+
+    // Allow Mode (Inverse Blocking)
+    val appsAllowMode: Boolean = false,           // If true, only allow selected apps (block everything else)
+    val domainsAllowMode: Boolean = false,        // If true, only allow selected domains (block everything else)
     
     // Website blocking
     val domains: List<String>? = null,

@@ -30,6 +30,7 @@ class AppBlockerAccessibilityService : AccessibilityService() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var blockedApps: Set<String> = emptySet()
     private var isActive = false
+    private var appsAllowMode = false  // If true, block everything EXCEPT blockedApps
     
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -51,8 +52,16 @@ class AppBlockerAccessibilityService : AccessibilityService() {
                 return
             }
             
-            // Check if this app is blocked
-            if (blockedApps.contains(packageName)) {
+            // Check if this app should be blocked based on mode
+            val shouldBlock = if (appsAllowMode) {
+                // Allow mode: block everything EXCEPT apps in the list
+                !blockedApps.contains(packageName)
+            } else {
+                // Block mode: block apps IN the list
+                blockedApps.contains(packageName)
+            }
+
+            if (shouldBlock) {
                 blockApp(packageName)
             }
         }
@@ -75,9 +84,11 @@ class AppBlockerAccessibilityService : AccessibilityService() {
             sessionRepository.getActiveSessionFlow().collect { session ->
                 if (session != null) {
                     blockedApps = session.blockedApps.toSet()
+                    appsAllowMode = session.appsAllowMode
                     isActive = true
                 } else {
                     blockedApps = emptySet()
+                    appsAllowMode = false
                     isActive = false
                 }
             }

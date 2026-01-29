@@ -137,6 +137,41 @@ fun ProfileCard(
                     )
                 }
 
+                // Allow Mode Indicators
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (profile.appsAllowMode) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(
+                                text = "📱 Apps: Allow Mode",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    if (profile.domainsAllowMode) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(
+                                text = "🌐 Domains: Allow Mode",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
                 // Schedule indicator
                 if (profile.scheduleEnabled && profile.scheduleStartTime != null && profile.scheduleEndTime != null) {
                     Surface(

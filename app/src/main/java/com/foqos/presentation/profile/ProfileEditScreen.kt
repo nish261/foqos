@@ -219,18 +219,62 @@ fun ProfileEditScreen(
                 }
             }
 
-            // App Selection Header
+            // App Selection Header with Allow Mode Toggle
             item {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        "Apps to Block (${selectedApps.size})",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            if (profile?.appsAllowMode == true)
+                                "Apps to Allow (${selectedApps.size})"
+                            else
+                                "Apps to Block (${selectedApps.size})",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Allow Mode Toggle
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    if (profile?.appsAllowMode == true) "Allow Mode" else "Block Mode",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    if (profile?.appsAllowMode == true)
+                                        "Only selected apps are allowed, all others blocked"
+                                    else
+                                        "Only selected apps are blocked, all others allowed",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                )
+                            }
+                            Switch(
+                                checked = profile?.appsAllowMode ?: false,
+                                onCheckedChange = { viewModel.toggleAppsAllowMode() }
+                            )
+                        }
+                    }
                 }
             }
             
@@ -266,18 +310,62 @@ fun ProfileEditScreen(
             // Website Blocking Section
             item {
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-) {
-                    Text(
-                        "Website Blocking (${domains.size})",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    IconButton(onClick = { showDomainDialog = true }) {
-                        Icon(Icons.Filled.Add, "Add Domain")
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            if (profile?.domainsAllowMode == true)
+                                "Domains to Allow (${domains.size})"
+                            else
+                                "Website Blocking (${domains.size})",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(onClick = { showDomainDialog = true }) {
+                            Icon(Icons.Filled.Add, "Add Domain")
+                        }
+                    }
+
+                    // Domain Allow Mode Toggle
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    if (profile?.domainsAllowMode == true) "Allow Mode" else "Block Mode",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    if (profile?.domainsAllowMode == true)
+                                        "Only selected domains are allowed, all others blocked"
+                                    else
+                                        "Only selected domains are blocked, all others allowed",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                )
+                            }
+                            Switch(
+                                checked = profile?.domainsAllowMode ?: false,
+                                onCheckedChange = { viewModel.toggleDomainsAllowMode() }
+                            )
+                        }
                     }
                 }
             }

@@ -56,7 +56,9 @@ class SessionRepository @Inject constructor(
         strategyStartData: String? = null,
         blockedApps: List<String> = emptyList(),
         blockedDomains: List<String> = emptyList(),
-        timerDurationMinutes: Int? = null
+        timerDurationMinutes: Int? = null,
+        appsAllowMode: Boolean = false,
+        domainsAllowMode: Boolean = false
     ): BlockedProfileSessionEntity {
         val session = BlockedProfileSessionEntity(
             profileId = profileId,
@@ -65,7 +67,9 @@ class SessionRepository @Inject constructor(
             strategyStartData = strategyStartData,
             blockedApps = blockedApps,
             blockedDomains = blockedDomains,
-            timerDurationMinutes = timerDurationMinutes
+            timerDurationMinutes = timerDurationMinutes,
+            appsAllowMode = appsAllowMode,
+            domainsAllowMode = domainsAllowMode
         )
         sessionDao.insertSession(session)
         return session

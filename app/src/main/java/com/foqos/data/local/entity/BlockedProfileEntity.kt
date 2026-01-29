@@ -35,9 +35,13 @@ data class BlockedProfileEntity(
     
     // Physical unlock - Multiple NFC tags with different purposes (JSON serialized)
     val nfcTagsJson: String? = null, // Stored as JSON string of List<NFCTagConfig>
-    
+
+    // Strict unlock - Specific NFC tag required to unlock (not any tag)
+    val strictUnlockTagId: String? = null, // Single NFC tag ID for strict unlock
+
     // QR code unlock
     val qrCodeId: String? = null,
+    val strictUnlockQRCode: String? = null, // Specific QR code for strict unlock
     
     // Emergency unlock settings
     val emergencyUnlockEnabled: Boolean = true,

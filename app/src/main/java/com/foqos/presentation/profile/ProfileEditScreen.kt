@@ -140,6 +140,83 @@ fun ProfileEditScreen(
                     }
                 }
                 }
+
+                // STRICT UNLOCKS Section (only for existing profiles with NFC strategy)
+                if (selectedStrategy.id == "nfc") {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "STRICT UNLOCKS",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Filled.Nfc,
+                                                contentDescription = "NFC Tag",
+                                                modifier = Modifier.size(24.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Text(
+                                                "NFC Tag",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            if (currentProfile.strictUnlockTagId != null)
+                                                "Set a specific NFC tag that can only unlock this profile when active"
+                                            else
+                                                "Set a specific NFC tag that can only unlock this profile when active",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+
+                                OutlinedButton(
+                                    onClick = { navController.navigate("write_nfc_tag/${currentProfile.id}") },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(Icons.Filled.Add, contentDescription = "Set", modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(if (currentProfile.strictUnlockTagId != null) "Change" else "Set")
+                                }
+
+                                if (currentProfile.strictUnlockTagId != null) {
+                                    Text(
+                                        "Tag ID: ${currentProfile.strictUnlockTagId.take(8)}...",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.5f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             // App Selection Header

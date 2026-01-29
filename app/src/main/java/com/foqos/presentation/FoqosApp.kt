@@ -17,6 +17,7 @@ import androidx.navigation.navArgument
 import com.foqos.presentation.home.HomeScreen
 import com.foqos.presentation.insights.InsightsScreen
 import com.foqos.presentation.nfc.NFCTagManagementScreen
+import com.foqos.presentation.nfc.WriteNFCTagScreen
 import com.foqos.presentation.profile.ProfileEditScreen
 import com.foqos.presentation.settings.SettingsScreen
 
@@ -33,6 +34,9 @@ sealed class Screen(val route: String, val title: String, val icon: androidx.com
     }
     object NFCTagManagement : Screen("nfc_tags/{profile_id}", "NFC Tags", Icons.Filled.Nfc) {
         fun createRoute(profileId: String) = "nfc_tags/$profileId"
+    }
+    object WriteNFCTag : Screen("write_nfc_tag/{profile_id}", "Write NFC Tag", Icons.Filled.Nfc) {
+        fun createRoute(profileId: String) = "write_nfc_tag/$profileId"
     }
 }
 
@@ -87,6 +91,13 @@ fun FoqosApp() {
             ) { backStackEntry ->
                 val profileId = backStackEntry.arguments?.getString("profile_id") ?: return@composable
                 NFCTagManagementScreen(navController, profileId)
+            }
+            composable(
+                route = "write_nfc_tag/{profile_id}",
+                arguments = listOf(navArgument("profile_id") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val profileId = backStackEntry.arguments?.getString("profile_id") ?: return@composable
+                WriteNFCTagScreen(navController, profileId)
             }
         }
     }

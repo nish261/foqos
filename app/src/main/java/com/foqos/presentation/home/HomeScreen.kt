@@ -25,8 +25,10 @@ import com.foqos.presentation.components.ProfileCard
 import com.foqos.presentation.components.ActiveSessionBanner
 import com.foqos.presentation.components.CalendarView
 import com.foqos.presentation.components.StatsOverview
+import com.foqos.presentation.components.TimerSetupDialog
 import com.foqos.presentation.components.TodayStats
 import com.foqos.presentation.session.BreakDialog
+import com.foqos.domain.model.BlockingStrategy
 import com.foqos.presentation.session.EmergencyUnlockDialog
 import com.foqos.presentation.session.RemoteLockBanner
 import com.foqos.presentation.session.RemoteLockActivationDialog
@@ -51,6 +53,8 @@ fun HomeScreen(
     var showBreakDialog by remember { mutableStateOf(false) }
     var showEmergencyDialog by remember { mutableStateOf(false) }
     var showRemoteLockDialog by remember { mutableStateOf(false) }
+    var showTimerDialog by remember { mutableStateOf(false) }
+    var selectedProfileForTimer by remember { mutableStateOf<BlockedProfileEntity?>(null) }
     
     // Handle UI State
     LaunchedEffect(uiState) {
@@ -137,54 +141,68 @@ fun HomeScreen(
                     }
                     
                     // Emergency unlock and remote lock controls
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Pause/Resume button
-                        FilledTonalButton(
-                            onClick = { viewModel.pauseSession() },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                if (activeSession.breakStartTime != null) Icons.Filled.PlayArrow else Icons.Filled.Pause,
-                                contentDescription = if (activeSession.breakStartTime != null) "Resume" else "Pause",
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(if (activeSession.breakStartTime != null) "Resume" else "Pause")
-                        }
+                    profile?.let { currentProfile ->
+                        val strategy = BlockingStrategy.fromId(currentProfile.blockingStrategyId)
 
-                        // Emergency unlock button
-                        OutlinedButton(
-                            onClick = { showEmergencyDialog = true },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                Icons.Filled.Warning,
-                                contentDescription = "Emergency",
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Emergency")
-                        }
-
-                        // Remote lock toggle button
-                        if (activeSession.remoteLockActivatedTime == null) {
+                            // Pause/Resume button
                             FilledTonalButton(
-                                onClick = { showRemoteLockDialog = true },
+                                onClick = { viewModel.pauseSession() },
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Icon(
-                                    Icons.Filled.Lock,
-                                    contentDescription = "Remote Lock",
+                                    if (activeSession.breakStartTime != null) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                                    contentDescription = if (activeSession.breakStartTime != null) "Resume" else "Pause",
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Remote Lock")
+                                Text(if (activeSession.breakStartTime != null) "Resume" else "Pause")
+                            }
+
+                            // QR Scanner button (for QR strategies)
+                            if (strategy.requiresQR()) {
+                                Button(
+                                    onClick = { navController.navigate(Screen.QRScanner.route) },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Scan QR")
+                                }
+                            }
+
+                            // Emergency unlock button
+                            OutlinedButton(
+                                onClick = { showEmergencyDialog = true },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Filled.Warning,
+                                    contentDescription = "Emergency",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Emergency")
+                            }
+
+                            // Remote lock toggle button
+                            if (activeSession.remoteLockActivatedTime == null && !strategy.requiresQR()) {
+                                FilledTonalButton(
+                                    onClick = { showRemoteLockDialog = true },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Lock,
+                                        contentDescription = "Remote Lock",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Remote Lock")
+                                }
                             }
                         }
                     }
@@ -240,7 +258,16 @@ fun HomeScreen(
                                 profile = profile,
                                 isActive = activeSession?.profileId == profile.id,
                                 sessionCount = profileSessionCounts[profile.id] ?: 0,
-                                onStart = { viewModel.startSession(profile) },
+                                onStart = {
+                                    val strategy = BlockingStrategy.fromId(profile.blockingStrategyId)
+                                    // Show timer dialog for timer-based strategies
+                                    if (strategy.requiresTimer()) {
+                                        selectedProfileForTimer = profile
+                                        showTimerDialog = true
+                                    } else {
+                                        viewModel.startSession(profile)
+                                    }
+                                },
                                 onDelete = { viewModel.deleteProfile(profile) }
                             )
                         }
@@ -257,6 +284,23 @@ fun HomeScreen(
             onCreate = { name ->
                 viewModel.createProfile(name)
                 showCreateDialog = false
+            }
+        )
+    }
+
+    // Timer Setup Dialog
+    if (showTimerDialog && selectedProfileForTimer != null) {
+        TimerSetupDialog(
+            onDismiss = {
+                showTimerDialog = false
+                selectedProfileForTimer = null
+            },
+            onStartWithTimer = { durationMinutes ->
+                selectedProfileForTimer?.let { profile ->
+                    viewModel.startSession(profile, durationMinutes)
+                }
+                showTimerDialog = false
+                selectedProfileForTimer = null
             }
         )
     }

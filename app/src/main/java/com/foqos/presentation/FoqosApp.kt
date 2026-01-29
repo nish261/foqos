@@ -19,6 +19,7 @@ import com.foqos.presentation.insights.InsightsScreen
 import com.foqos.presentation.nfc.NFCTagManagementScreen
 import com.foqos.presentation.nfc.WriteNFCTagScreen
 import com.foqos.presentation.profile.ProfileEditScreen
+import com.foqos.presentation.qr.QRScannerScreen
 import com.foqos.presentation.settings.SettingsScreen
 
 sealed class Screen(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
@@ -37,6 +38,9 @@ sealed class Screen(val route: String, val title: String, val icon: androidx.com
     }
     object WriteNFCTag : Screen("write_nfc_tag/{profile_id}", "Write NFC Tag", Icons.Filled.Nfc) {
         fun createRoute(profileId: String) = "write_nfc_tag/$profileId"
+    }
+    object QRScanner : Screen("qr_scanner", "Scan QR Code", Icons.Filled.Home) {
+        const val route = "qr_scanner"
     }
 }
 
@@ -98,6 +102,9 @@ fun FoqosApp() {
             ) { backStackEntry ->
                 val profileId = backStackEntry.arguments?.getString("profile_id") ?: return@composable
                 WriteNFCTagScreen(navController, profileId)
+            }
+            composable(Screen.QRScanner.route) {
+                QRScannerScreen(navController)
             }
         }
     }

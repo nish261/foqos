@@ -1,23 +1,31 @@
 package com.foqos.presentation.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.foqos.data.local.entity.BlockedProfileEntity
 import com.foqos.data.local.entity.BlockedProfileSessionEntity
 import com.foqos.data.repository.ProfileRepository
 import com.foqos.presentation.components.TodayStats
+import com.foqos.worker.TimerExpirationWorker
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 import com.foqos.data.repository.SessionRepository
 import com.foqos.nfc.NFCActionHandler
 import com.foqos.nfc.NFCActionResult
 import com.foqos.nfc.NFCReader
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val profileRepository: ProfileRepository,
     private val sessionRepository: SessionRepository,
     private val nfcReader: NFCReader,
@@ -148,31 +156,54 @@ class HomeViewModel @Inject constructor(
         }
     }
     
-    fun startSession(profile: BlockedProfileEntity) {
+    fun startSession(profile: BlockedProfileEntity, timerDurationMinutes: Int? = null) {
         viewModelScope.launch {
             try {
                 _uiState.value = HomeUiState.Loading
-                
+
                 // Check if there's already an active session
                 val existingSession = sessionRepository.getActiveSession()
                 if (existingSession != null) {
                     _uiState.value = HomeUiState.Error("A session is already active")
                     return@launch
                 }
-                
+
                 // Start new session
-                sessionRepository.startSession(
+                val session = sessionRepository.startSession(
                     profileId = profile.id,
                     strategyId = profile.blockingStrategyId,
                     blockedApps = profile.selectedApps,
-                    blockedDomains = profile.domains ?: emptyList()
+                    blockedDomains = profile.domains ?: emptyList(),
+                    timerDurationMinutes = timerDurationMinutes
                 )
-                
+
+                // Schedule timer expiration worker if timer is set
+                if (timerDurationMinutes != null) {
+                    scheduleTimerExpiration(session.id, timerDurationMinutes)
+                }
+
                 _uiState.value = HomeUiState.Success("Session started")
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Failed to start session")
             }
         }
+    }
+
+    private fun scheduleTimerExpiration(sessionId: String, durationMinutes: Int) {
+        val workRequest = OneTimeWorkRequestBuilder<TimerExpirationWorker>()
+            .setInitialDelay(durationMinutes.toLong(), TimeUnit.MINUTES)
+            .setInputData(
+                workDataOf(TimerExpirationWorker.KEY_SESSION_ID to sessionId)
+            )
+            .build()
+
+        WorkManager.getInstance(context)
+            .enqueue(workRequest)
+    }
+
+    fun cancelTimer(sessionId: String) {
+        WorkManager.getInstance(context)
+            .cancelAllWorkByTag("${TimerExpirationWorker.WORK_NAME_PREFIX}$sessionId")
     }
     
     fun stopSession() {

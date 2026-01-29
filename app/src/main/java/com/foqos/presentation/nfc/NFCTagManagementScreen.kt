@@ -1,5 +1,7 @@
 package com.foqos.presentation.nfc
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +11,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -62,12 +66,32 @@ fun NFCTagManagementScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Scanning indicator
-            if (isScanning) {
+            // Scanning indicator with pulse animation
+            AnimatedVisibility(
+                visible = isScanning,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                val infiniteTransition = rememberInfiniteTransition(label = "scan")
+                val pulseScale by infiniteTransition.animateFloat(
+                    initialValue = 0.95f,
+                    targetValue = 1.05f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1000, easing = FastOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "pulse"
+                )
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .graphicsLayer {
+                            scaleX = pulseScale
+                            scaleY = pulseScale
+                        }
+                        .shadow(8.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
@@ -82,7 +106,7 @@ fun NFCTagManagementScreen(
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         Column {
                             Text(
-                                "Scanning for NFC tag...",
+                                "📡 Scanning for NFC tag...",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -157,11 +181,17 @@ fun NFCTagManagementScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(nfcTags) { tag ->
-                        NFCTagCard(
-                            tag = tag,
-                            onDelete = { viewModel.removeTag(profileId, tag.tagId) }
-                        )
+                    items(nfcTags, key = { it.tagId }) { tag ->
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 4 }),
+                            exit = fadeOut() + slideOutVertically(targetOffsetY = { -it / 4 })
+                        ) {
+                            NFCTagCard(
+                                tag = tag,
+                                onDelete = { viewModel.removeTag(profileId, tag.tagId) }
+                            )
+                        }
                     }
                 }
             }
@@ -187,7 +217,9 @@ private fun NFCTagCard(
     onDelete: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         )

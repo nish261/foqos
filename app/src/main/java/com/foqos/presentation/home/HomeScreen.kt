@@ -1,5 +1,7 @@
 package com.foqos.presentation.home
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -90,8 +92,15 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Active session banner
-            activeSession?.let { activeSession ->
+            // Active session banner with animation
+            AnimatedVisibility(
+                visible = activeSession != null,
+                enter = expandVertically(
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+                ) + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                activeSession?.let { activeSession ->
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     // Remote lock banner if active
                     if (activeSession.remoteLockActivatedTime != null) {
@@ -169,8 +178,9 @@ fun HomeScreen(
                         }
                     }
                 }
+                }
             }
-            
+
             // Profile list
             if (profiles.isEmpty()) {
                 Box(
@@ -200,12 +210,20 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(profiles, key = { it.id }) { profile ->
-                        ProfileCard(
-                            profile = profile,
-                            isActive = activeSession?.profileId == profile.id,
-                            onStart = { viewModel.startSession(profile) },
-                            onDelete = { viewModel.deleteProfile(profile) }
-                        )
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(animationSpec = tween(300)) +
+                                    slideInVertically(initialOffsetY = { it / 4 }),
+                            exit = fadeOut(animationSpec = tween(300)) +
+                                    slideOutVertically(targetOffsetY = { -it / 4 })
+                        ) {
+                            ProfileCard(
+                                profile = profile,
+                                isActive = activeSession?.profileId == profile.id,
+                                onStart = { viewModel.startSession(profile) },
+                                onDelete = { viewModel.deleteProfile(profile) }
+                            )
+                        }
                     }
                 }
             }

@@ -1,5 +1,8 @@
 package com.foqos.presentation.profile
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -258,16 +262,29 @@ private fun AppSelectionItem(
     isSelected: Boolean,
     onToggle: () -> Unit
 ) {
+    val containerColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        animationSpec = tween(200),
+        label = "appCardColor"
+    )
+
+    val elevation by animateDpAsState(
+        targetValue = if (isSelected) 3.dp else 1.dp,
+        animationSpec = tween(200),
+        label = "appCardElevation"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(elevation)
             .clickable(onClick = onToggle),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
+            containerColor = containerColor
         )
     ) {
         Row(

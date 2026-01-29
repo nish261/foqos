@@ -1,5 +1,8 @@
 package com.foqos.presentation.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -8,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.foqos.data.local.entity.BlockedProfileEntity
@@ -23,15 +27,30 @@ fun ProfileCard(
     modifier: Modifier = Modifier
 ) {
     val strategy = BlockingStrategy.fromId(profile.blockingStrategyId)
-    
+
+    // Animate colors
+    val containerColor by animateColorAsState(
+        targetValue = if (isActive) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        animationSpec = tween(300),
+        label = "cardColor"
+    )
+
+    val elevation by animateDpAsState(
+        targetValue = if (isActive) 4.dp else 2.dp,
+        animationSpec = tween(300),
+        label = "cardElevation"
+    )
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(elevation),
         colors = CardDefaults.cardColors(
-            containerColor = if (isActive) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
+            containerColor = containerColor
         )
     ) {
         Column(

@@ -34,7 +34,7 @@ class NFCTagManagementViewModel @Inject constructor(
         viewModelScope.launch {
             nfcReader.tagFlow.collect { tag ->
                 if (_isScanning.value && currentProfileId != null && currentMode != null) {
-                    val tagId = tag.id.joinToString("") { "%02x".format(it) }
+                    val tagId = nfcReader.getTagId(tag)
                     addTag(currentProfileId!!, currentMode!!, tagId)
                     _isScanning.value = false
                     currentMode = null

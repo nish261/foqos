@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
@@ -126,7 +127,7 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(
-                                if (activeSession.breakStartTime != null) Icons.Filled.PlayArrow else Icons.Filled.Stop,
+                                if (activeSession.breakStartTime != null) Icons.Filled.PlayArrow else Icons.Filled.Pause,
                                 contentDescription = if (activeSession.breakStartTime != null) "Resume" else "Pause",
                                 modifier = Modifier.size(18.dp)
                             )

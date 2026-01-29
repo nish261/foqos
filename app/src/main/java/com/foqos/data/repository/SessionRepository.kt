@@ -79,4 +79,36 @@ class SessionRepository @Inject constructor(
         // For now, just update the session
         sessionDao.updateSession(session)
     }
+    
+    suspend fun updateEmergencyUnlockAttempts(
+        sessionId: String,
+        attemptsUsed: Int,
+        cooldownUntil: Long?
+    ) {
+        val session = sessionDao.getSessionById(sessionId) ?: return
+        val updatedSession = session.copy(
+            emergencyUnlockAttemptsUsed = attemptsUsed,
+            emergencyUnlockCooldownUntil = cooldownUntil,
+            lastEmergencyAttemptTime = System.currentTimeMillis()
+        )
+        sessionDao.updateSession(updatedSession)
+    }
+
+    suspend fun activateRemoteLock(sessionId: String, activatedBy: String?) {
+        val session = sessionDao.getSessionById(sessionId) ?: return
+        val updatedSession = session.copy(
+            remoteLockActivatedTime = System.currentTimeMillis(),
+            remoteLockActivatedBy = activatedBy
+        )
+        sessionDao.updateSession(updatedSession)
+    }
+
+    suspend fun deactivateRemoteLock(sessionId: String) {
+        val session = sessionDao.getSessionById(sessionId) ?: return
+        val updatedSession = session.copy(
+            remoteLockActivatedTime = null,
+            remoteLockActivatedBy = null
+        )
+        sessionDao.updateSession(updatedSession)
+    }
 }

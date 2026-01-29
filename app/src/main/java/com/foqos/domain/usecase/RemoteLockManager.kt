@@ -29,7 +29,7 @@ class RemoteLockManager @Inject constructor(
             return Result.failure(Exception("Remote lock not enabled for this profile"))
         }
         
-        if (profile.nfcTags.isNullOrEmpty()) {
+        if (profile.nfcTagsJson.isNullOrBlank()) {
             return Result.failure(Exception("No NFC tags configured"))
         }
         
@@ -67,6 +67,6 @@ class RemoteLockManager @Inject constructor(
      */
     suspend fun isRemoteLockSupported(profileId: String): Boolean {
         val profile = profileRepository.getProfileById(profileId) ?: return false
-        return profile.remoteLockEnabled && !profile.nfcTags.isNullOrEmpty()
+        return profile.remoteLockEnabled && !profile.nfcTagsJson.isNullOrBlank()
     }
 }

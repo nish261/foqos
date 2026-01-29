@@ -56,7 +56,7 @@ class BlockingForegroundService : Service() {
             description = "Ongoing focus session notifications"
         }
         
-        val notificationManager = getSystemService(Context.NOTIFICATION_MANAGER_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
     

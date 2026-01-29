@@ -17,8 +17,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.foqos.data.local.entity.BlockedProfileEntity
+import com.foqos.presentation.Screen
 import com.foqos.presentation.components.ProfileCard
 import com.foqos.presentation.components.ActiveSessionBanner
+import com.foqos.presentation.session.BreakComponents.BreakDialog
+import com.foqos.presentation.session.EmergencyUnlockDialog
+import com.foqos.presentation.session.RemoteLockComponents.RemoteLockBanner
+import com.foqos.presentation.session.RemoteLockComponents.RemoteLockActivationDialog
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Lock
 import com.foqos.util.TimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,8 +37,11 @@ fun HomeScreen(
     val profiles by viewModel.profiles.collectAsState()
     val activeSession by viewModel.activeSession.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
-    
+
     var showCreateDialog by remember { mutableStateOf(false) }
+    var showBreakDialog by remember { mutableStateOf(false) }
+    var showEmergencyDialog by remember { mutableStateOf(false) }
+    var showRemoteLockDialog by remember { mutableStateOf(false) }
     
     // Handle UI State
     LaunchedEffect(uiState) {
@@ -94,12 +104,15 @@ fun HomeScreen(
                     }
                     
                     // Normal session banner
-                    ActiveSessionBanner(
-                        session = activeSession,
-                        onStop = { viewModel.stopSession() },
-                        onBreak = { showBreakDialog = true },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    val profile = profiles.find { it.id == activeSession.profileId }
+                    profile?.let {
+                        ActiveSessionBanner(
+                            profile = it,
+                            session = activeSession,
+                            onStop = { viewModel.stopSession() },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                     
                     // Emergency unlock and remote lock controls
                     Row(

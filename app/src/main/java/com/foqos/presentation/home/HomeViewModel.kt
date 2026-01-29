@@ -109,6 +109,44 @@ class HomeViewModel @Inject constructor(
     fun clearUiState() {
         _uiState.value = HomeUiState.Idle
     }
+
+    fun startBreak(duration: Int) {
+        viewModelScope.launch {
+            try {
+                // TODO: Implement break functionality
+                _uiState.value = HomeUiState.Success("Break started")
+            } catch (e: Exception) {
+                _uiState.value = HomeUiState.Error(e.message ?: "Failed to start break")
+            }
+        }
+    }
+
+    fun useEmergencyUnlock() {
+        viewModelScope.launch {
+            try {
+                val session = sessionRepository.getActiveSession()
+                if (session != null) {
+                    sessionRepository.endSession(session.id)
+                    _uiState.value = HomeUiState.Success("Emergency unlock successful")
+                } else {
+                    _uiState.value = HomeUiState.Error("No active session")
+                }
+            } catch (e: Exception) {
+                _uiState.value = HomeUiState.Error(e.message ?: "Emergency unlock failed")
+            }
+        }
+    }
+
+    fun activateRemoteLock(code: String) {
+        viewModelScope.launch {
+            try {
+                // TODO: Implement remote lock functionality
+                _uiState.value = HomeUiState.Success("Remote lock activated")
+            } catch (e: Exception) {
+                _uiState.value = HomeUiState.Error(e.message ?: "Failed to activate remote lock")
+            }
+        }
+    }
 }
 
 sealed class HomeUiState {

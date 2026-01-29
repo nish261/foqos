@@ -65,13 +65,11 @@ fun BreakDialog(
                     }
                 }
                 
-                if (profile.breakDurationMinutes != null) {
-                    Text(
-                        "Profile default: ${profile.breakDurationMinutes} minutes",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                }
+                Text(
+                    "Profile default: ${profile.breakTimeInMinutes} minutes",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
             }
         },
         confirmButton = {

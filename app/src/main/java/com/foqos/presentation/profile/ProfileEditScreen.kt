@@ -15,7 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -247,8 +248,9 @@ private fun AppSelectionItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            val bitmap = remember(app.icon) { app.icon.toBitmap().asImageBitmap() }
             Image(
-                painter = rememberDrawablePainter(app.icon),
+                bitmap = bitmap,
                 contentDescription = app.appName,
                 modifier = Modifier.size(40.dp)
             )

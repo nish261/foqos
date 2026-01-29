@@ -105,8 +105,8 @@ fun RemoteLockActivationDialog(
     onActivate: (deviceName: String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var deviceName by androidx.compose.runtime.remember {
-        androidx.compose.runtime.mutableStateOf(android.os.Build.MODEL)
+    var deviceName by remember {
+        mutableStateOf(android.os.Build.MODEL)
     }
     
     AlertDialog(

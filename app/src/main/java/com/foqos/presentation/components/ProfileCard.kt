@@ -105,19 +105,19 @@ fun ProfileCard(
             }
             
             // Features
-            if (profile.breaksEnabled || profile.reminderEnabled || profile.strictMode) {
+            if (profile.enableBreaks || (profile.reminderTimeInSeconds != null) || profile.enableStrictMode) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (profile.breaksEnabled) {
+                    if (profile.enableBreaks) {
                         FeatureChip("Breaks")
                     }
-                    if (profile.reminderEnabled) {
+                    if (profile.reminderTimeInSeconds != null) {
                         FeatureChip("Reminders")
                     }
-                    if (profile.strictMode) {
+                    if (profile.enableStrictMode) {
                         FeatureChip("Strict Mode")
                     }
                 }

@@ -134,9 +134,9 @@ private fun SessionDurationChart(sessions: List<com.foqos.data.local.entity.Bloc
         ) {
             if (sessions.isNotEmpty()) {
                 val chartEntryModel = entryModelOf(
-                    sessions.mapIndexed { index, session ->
+                    *sessions.mapIndexed { index, session ->
                         index.toFloat() to (session.getTotalDuration() / 60000f) // Convert to minutes
-                    }
+                    }.toTypedArray()
                 )
                 
                 val primaryColor = MaterialTheme.colorScheme.primary

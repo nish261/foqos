@@ -6,6 +6,10 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -147,7 +151,7 @@ fun RemoteLockActivationDialog(
                 
                 OutlinedTextField(
                     value = deviceName,
-                    onValueChange = { deviceName = it },
+                    onValueChange = { newValue: String -> deviceName = newValue },
                     label = { Text("Device Name (optional)") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()

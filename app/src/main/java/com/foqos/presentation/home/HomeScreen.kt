@@ -20,10 +20,10 @@ import com.foqos.data.local.entity.BlockedProfileEntity
 import com.foqos.presentation.Screen
 import com.foqos.presentation.components.ProfileCard
 import com.foqos.presentation.components.ActiveSessionBanner
-import com.foqos.presentation.session.BreakComponents.BreakDialog
+import com.foqos.presentation.session.BreakDialog
 import com.foqos.presentation.session.EmergencyUnlockDialog
-import com.foqos.presentation.session.RemoteLockComponents.RemoteLockBanner
-import com.foqos.presentation.session.RemoteLockComponents.RemoteLockActivationDialog
+import com.foqos.presentation.session.RemoteLockBanner
+import com.foqos.presentation.session.RemoteLockActivationDialog
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Lock
 import com.foqos.util.TimeFormatter

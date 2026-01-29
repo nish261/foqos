@@ -113,12 +113,13 @@ fun ProfileEditScreen(
             }
 
             // NFC Tag Management
-            if (profile != null && selectedStrategy.id == "nfc") {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { navController.navigate("nfc_tags/${profile.id}") }
-                    ) {
+            profile?.let { currentProfile ->
+                if (selectedStrategy.id == "nfc") {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { navController.navigate("nfc_tags/${currentProfile.id}") }
+                        ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -137,6 +138,7 @@ fun ProfileEditScreen(
                             Icon(Icons.Filled.Nfc, "Manage NFC Tags")
                         }
                     }
+                }
                 }
             }
 

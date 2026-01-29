@@ -19,6 +19,7 @@ import com.foqos.util.TimeFormatter
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ActiveSessionBanner(
     profile: BlockedProfileEntity,

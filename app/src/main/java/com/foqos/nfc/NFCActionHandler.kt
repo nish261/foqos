@@ -85,6 +85,10 @@ class NFCActionHandler @Inject constructor(
                     _actionResult.emit(NFCActionResult.Error("Remote lock not active"))
                 }
             }
+
+            NFCTagMode.CUSTOM -> {
+                _actionResult.emit(NFCActionResult.Error("Custom tag mode not yet implemented"))
+            }
         }
     }
 }

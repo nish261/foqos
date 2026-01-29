@@ -243,6 +243,7 @@ private fun NFCTagCard(
                         NFCTagMode.RESUME -> Icons.Filled.PlayArrow
                         NFCTagMode.EMERGENCY -> Icons.Filled.Warning
                         NFCTagMode.REMOTE_LOCK_TOGGLE -> Icons.Filled.Lock
+                        NFCTagMode.CUSTOM -> Icons.Filled.Settings
                     },
                     contentDescription = tag.mode.name,
                     tint = MaterialTheme.colorScheme.primary,
@@ -309,6 +310,7 @@ private fun AddNFCTagDialog(
                                     NFCTagMode.RESUME -> Icons.Filled.PlayArrow
                                     NFCTagMode.EMERGENCY -> Icons.Filled.Warning
                                     NFCTagMode.REMOTE_LOCK_TOGGLE -> Icons.Filled.Lock
+                                    NFCTagMode.CUSTOM -> Icons.Filled.Settings
                                 },
                                 contentDescription = mode.name,
                                 tint = MaterialTheme.colorScheme.primary
@@ -326,6 +328,7 @@ private fun AddNFCTagDialog(
                                         NFCTagMode.RESUME -> "Resume blocking"
                                         NFCTagMode.EMERGENCY -> "Bypass all cooldowns"
                                         NFCTagMode.REMOTE_LOCK_TOGGLE -> "Toggle remote lock"
+                                        NFCTagMode.CUSTOM -> "Custom action (not yet implemented)"
                                     },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)

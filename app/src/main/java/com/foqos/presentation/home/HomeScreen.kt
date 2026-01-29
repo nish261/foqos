@@ -23,6 +23,9 @@ import com.foqos.data.local.entity.BlockedProfileEntity
 import com.foqos.presentation.Screen
 import com.foqos.presentation.components.ProfileCard
 import com.foqos.presentation.components.ActiveSessionBanner
+import com.foqos.presentation.components.CalendarView
+import com.foqos.presentation.components.StatsOverview
+import com.foqos.presentation.components.TodayStats
 import com.foqos.presentation.session.BreakDialog
 import com.foqos.presentation.session.EmergencyUnlockDialog
 import com.foqos.presentation.session.RemoteLockBanner
@@ -40,6 +43,9 @@ fun HomeScreen(
     val profiles by viewModel.profiles.collectAsState()
     val activeSession by viewModel.activeSession.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
+    val completedSessionDates by viewModel.completedSessionDates.collectAsState()
+    val todayStats by viewModel.todayStats.collectAsState()
+    val profileSessionCounts by viewModel.profileSessionCounts.collectAsState()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showBreakDialog by remember { mutableStateOf(false) }
@@ -90,8 +96,13 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
         ) {
+            // Calendar View (sticky at top, outside scroll)
+            CalendarView(
+                completedSessionDates = completedSessionDates,
+                modifier = Modifier.padding(top = padding.calculateTopPadding())
+            )
+
             // Active session banner with animation
             AnimatedVisibility(
                 visible = activeSession != null,
@@ -206,9 +217,17 @@ fun HomeScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Stats Overview
+                    item {
+                        StatsOverview(
+                            stats = todayStats,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
                     items(profiles, key = { it.id }) { profile ->
                         AnimatedVisibility(
                             visible = true,
@@ -220,6 +239,7 @@ fun HomeScreen(
                             ProfileCard(
                                 profile = profile,
                                 isActive = activeSession?.profileId == profile.id,
+                                sessionCount = profileSessionCounts[profile.id] ?: 0,
                                 onStart = { viewModel.startSession(profile) },
                                 onDelete = { viewModel.deleteProfile(profile) }
                             )

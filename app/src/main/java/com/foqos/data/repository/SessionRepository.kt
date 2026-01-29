@@ -29,6 +29,10 @@ class SessionRepository @Inject constructor(
     fun getRecentSessions(limit: Int = 50): Flow<List<BlockedProfileSessionEntity>> {
         return sessionDao.getRecentSessions(limit)
     }
+
+    fun getAllCompletedSessions(): Flow<List<BlockedProfileSessionEntity>> {
+        return sessionDao.getAllCompletedSessions()
+    }
     
     suspend fun insertSession(session: BlockedProfileSessionEntity) {
         sessionDao.insertSession(session)

@@ -20,7 +20,10 @@ interface SessionDao {
     
     @Query("SELECT * FROM blocked_sessions ORDER BY startTime DESC LIMIT :limit")
     fun getRecentSessions(limit: Int = 50): Flow<List<BlockedProfileSessionEntity>>
-    
+
+    @Query("SELECT * FROM blocked_sessions WHERE endTime IS NOT NULL ORDER BY startTime DESC")
+    fun getAllCompletedSessions(): Flow<List<BlockedProfileSessionEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: BlockedProfileSessionEntity)
     

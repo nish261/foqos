@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.foqos.data.local.entity.BlockedProfileEntity
 import com.foqos.data.local.entity.BlockedProfileSessionEntity
 import com.foqos.data.repository.ProfileRepository
+import com.foqos.presentation.components.TodayStats
+import java.util.Calendar
 import com.foqos.data.repository.SessionRepository
 import com.foqos.nfc.NFCActionHandler
 import com.foqos.nfc.NFCActionResult
@@ -62,6 +64,63 @@ class HomeViewModel @Inject constructor(
     
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Idle)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    // Completed session dates for calendar
+    val completedSessionDates: StateFlow<List<Long>> = sessionRepository
+        .getAllCompletedSessions()
+        .map { sessions -> sessions.map { it.startTime } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // Today's stats
+    val todayStats: StateFlow<TodayStats> = combine(
+        activeSession,
+        sessionRepository.getAllCompletedSessions()
+    ) { session, allSessions ->
+        val todayStart = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        val todayEnd = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
+
+        val todaySessions = allSessions.filter { it.startTime in todayStart..todayEnd }
+        val focusTime = todaySessions.sumOf { it.getTotalDuration() }
+
+        TodayStats(
+            blockedAppsCount = session?.blockedApps?.size ?: 0,
+            blockedDomainsCount = session?.blockedDomains?.size ?: 0,
+            totalSessions = todaySessions.size,
+            focusTimeMills = focusTime
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = TodayStats(0, 0, 0, 0)
+    )
+
+    // Session counts per profile
+    val profileSessionCounts: StateFlow<Map<String, Int>> = sessionRepository
+        .getAllCompletedSessions()
+        .map { sessions ->
+            sessions.groupBy { it.profileId }
+                .mapValues { it.value.size }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyMap()
+        )
     
     fun createProfile(name: String) {
         viewModelScope.launch {

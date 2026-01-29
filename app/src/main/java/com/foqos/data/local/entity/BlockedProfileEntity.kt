@@ -33,8 +33,8 @@ data class BlockedProfileEntity(
     // Website blocking
     val domains: List<String>? = null,
     
-    // Physical unlock - Multiple NFC tags with different purposes
-    val nfcTags: List<NFCTagConfig>? = null,
+    // Physical unlock - Multiple NFC tags with different purposes (JSON serialized)
+    val nfcTagsJson: String? = null, // Stored as JSON string of List<NFCTagConfig>
     
     // QR code unlock
     val qrCodeId: String? = null,

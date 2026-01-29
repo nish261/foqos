@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.foqos.data.local.Converters
+import kotlinx.serialization.Serializable
 import java.util.UUID
 
 @Entity(
@@ -29,11 +30,21 @@ data class BlockedProfileSessionEntity(
     val endTime: Long? = null,
     val pausedDurations: List<PausedDuration> = emptyList(),
     val strategyId: String,
-    val strategyStartData: String? = null, // NFC tag ID or QR code content used to start
+    val strategyStartData: String? = null,
     val blockedApps: List<String> = emptyList(),
     val blockedDomains: List<String> = emptyList(),
-    val timerDurationMinutes: Int? = null
+    val timerDurationMinutes: Int? = null,
+    
+    // Emergency unlock tracking
+    val emergencyUnlockAttemptsUsed: Int = 0,
+    val lastEmergencyAttemptTime: Long? = null,
+    val emergencyUnlockCooldownUntil: Long? = null,
+    
+    // Remote lock state
+    val remoteLockActivatedTime: Long? = null,
+    val remoteLockActivatedBy: String? = null
 ) {
+    @Serializable
     data class PausedDuration(
         val startTime: Long,
         val endTime: Long
@@ -47,3 +58,4 @@ data class BlockedProfileSessionEntity(
     
     fun isActive(): Boolean = endTime == null
 }
+

@@ -160,8 +160,8 @@
             </intent-filter>
         </receiver>
 
-        <!-- Device Admin Receiver for Strict Mode -->
-        <receiver
+        <!-- Device Admin Receiver for Strict Mode - TEMPORARILY DISABLED FOR TESTING -->
+        <!-- <receiver
             android:name=".admin.FoqosDeviceAdminReceiver"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
             android:exported="true">
@@ -171,7 +171,7 @@
             <intent-filter>
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
-        </receiver>
+        </receiver> -->
 
         <!-- WorkManager initialization -->
         <provider

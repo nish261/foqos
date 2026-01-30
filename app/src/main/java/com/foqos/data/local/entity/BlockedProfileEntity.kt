@@ -49,8 +49,8 @@ data class BlockedProfileEntity(
     val strictUnlockQRCode: String? = null, // Specific QR code for strict unlock
 
     // UI customization
-    val gradientId: Int = 0 // 0-7 for preset gradient colors
-    
+    val gradientId: Int = 0, // 0-7 for preset gradient colors
+
     // Emergency unlock settings
     val emergencyUnlockEnabled: Boolean = true,
     val emergencyUnlockAttempts: Int = 5,

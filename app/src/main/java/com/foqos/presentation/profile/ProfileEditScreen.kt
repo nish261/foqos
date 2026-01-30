@@ -21,6 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
+import com.foqos.presentation.components.ScheduleConfig
+import com.foqos.presentation.components.ScheduleSetupDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +41,7 @@ fun ProfileEditScreen(
     var profileName by remember { mutableStateOf(profile?.name ?: "") }
     var showStrategyDialog by remember { mutableStateOf(false) }
     var showDomainDialog by remember { mutableStateOf(false) }
+    var showScheduleDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     
     // Navigate back when saved
@@ -231,6 +234,197 @@ fun ProfileEditScreen(
                                     )
                                 }
                             )
+                        }
+                    }
+                }
+            }
+
+            // Strict Mode
+            item {
+                val strictModeEnabled = profile?.enableStrictMode == true
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (strictModeEnabled)
+                            MaterialTheme.colorScheme.errorContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Strict Mode",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "Prevents app uninstallation and settings access during sessions. Requires Device Admin permission.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = strictModeEnabled,
+                            onCheckedChange = { viewModel.toggleStrictMode() }
+                        )
+                    }
+                }
+            }
+
+            // Disable Background Stops
+            item {
+                val disableBackgroundStops = profile?.disableBackgroundStops == true
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (disableBackgroundStops)
+                            MaterialTheme.colorScheme.tertiaryContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Disable Background Stops",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "Prevents system from stopping the app in background during sessions. May increase battery usage.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = disableBackgroundStops,
+                            onCheckedChange = { viewModel.toggleDisableBackgroundStops() }
+                        )
+                    }
+                }
+            }
+
+            // Schedule System
+            item {
+                val scheduleEnabled = profile?.scheduleEnabled == true
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (scheduleEnabled)
+                            MaterialTheme.colorScheme.tertiaryContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Schedule",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Restrict sessions to specific days and times",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = scheduleEnabled,
+                                onCheckedChange = { viewModel.toggleSchedule() }
+                            )
+                        }
+
+                        if (scheduleEnabled) {
+                            // Show current schedule
+                            val days = profile?.scheduleDaysOfWeek?.mapNotNull { dayNum ->
+                                when (dayNum) {
+                                    1 -> "Mon"
+                                    2 -> "Tue"
+                                    3 -> "Wed"
+                                    4 -> "Thu"
+                                    5 -> "Fri"
+                                    6 -> "Sat"
+                                    7 -> "Sun"
+                                    else -> null
+                                }
+                            }?.joinToString(", ") ?: "No days selected"
+
+                            val timeRange = if (profile?.scheduleStartTime != null && profile.scheduleEndTime != null) {
+                                "${profile.scheduleStartTime} - ${profile.scheduleEndTime}"
+                            } else {
+                                "No time set"
+                            }
+
+                            OutlinedCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { showScheduleDialog = true }
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            "Days",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            days,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            "Time",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            timeRange,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    Text(
+                                        "Tap to edit",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -542,6 +736,29 @@ fun ProfileEditScreen(
             onAdd = { domain ->
                 viewModel.addDomain(domain)
                 showDomainDialog = false
+            }
+        )
+    }
+
+    // Schedule Setup Dialog
+    if (showScheduleDialog) {
+        val currentSchedule = if (profile?.scheduleEnabled == true &&
+            profile.scheduleDaysOfWeek != null &&
+            profile.scheduleStartTime != null &&
+            profile.scheduleEndTime != null) {
+            ScheduleConfig(
+                daysOfWeek = profile.scheduleDaysOfWeek,
+                startTime = profile.scheduleStartTime,
+                endTime = profile.scheduleEndTime
+            )
+        } else null
+
+        ScheduleSetupDialog(
+            currentSchedule = currentSchedule,
+            onDismiss = { showScheduleDialog = false },
+            onSave = { schedule ->
+                viewModel.setSchedule(schedule)
+                showScheduleDialog = false
             }
         )
     }

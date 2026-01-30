@@ -8,6 +8,7 @@ import com.foqos.data.repository.ProfileRepository
 import com.foqos.domain.model.BlockingStrategy
 import com.foqos.domain.model.NFCTagConfig
 import com.foqos.domain.model.NFCTagMode
+import com.foqos.presentation.components.ScheduleConfig
 import com.foqos.util.AppListProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -141,6 +142,33 @@ class ProfileEditViewModel @Inject constructor(
         )
     }
 
+    fun toggleSchedule() {
+        _profile.value = _profile.value?.copy(
+            scheduleEnabled = !(_profile.value?.scheduleEnabled ?: false)
+        )
+    }
+
+    fun setSchedule(schedule: ScheduleConfig) {
+        _profile.value = _profile.value?.copy(
+            scheduleEnabled = true,
+            scheduleDaysOfWeek = schedule.daysOfWeek,
+            scheduleStartTime = schedule.startTime,
+            scheduleEndTime = schedule.endTime
+        )
+    }
+
+    fun toggleStrictMode() {
+        _profile.value = _profile.value?.copy(
+            enableStrictMode = !(_profile.value?.enableStrictMode ?: false)
+        )
+    }
+
+    fun toggleDisableBackgroundStops() {
+        _profile.value = _profile.value?.copy(
+            disableBackgroundStops = !(_profile.value?.disableBackgroundStops ?: false)
+        )
+    }
+
     fun saveProfile(name: String) {
         viewModelScope.launch {
             try {
@@ -159,7 +187,13 @@ class ProfileEditViewModel @Inject constructor(
                             domainsAllowMode = profile.domainsAllowMode,
                             blockAllBrowsers = profile.blockAllBrowsers,
                             reminderTimeInSeconds = profile.reminderTimeInSeconds,
-                            customReminderMessage = profile.customReminderMessage
+                            customReminderMessage = profile.customReminderMessage,
+                            scheduleEnabled = profile.scheduleEnabled,
+                            scheduleDaysOfWeek = profile.scheduleDaysOfWeek,
+                            scheduleStartTime = profile.scheduleStartTime,
+                            scheduleEndTime = profile.scheduleEndTime,
+                            enableStrictMode = profile.enableStrictMode,
+                            disableBackgroundStops = profile.disableBackgroundStops
                         )
                     )
                 } else {

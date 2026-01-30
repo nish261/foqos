@@ -48,6 +48,7 @@ fun HomeScreen(
     val completedSessionDates by viewModel.completedSessionDates.collectAsState()
     val todayStats by viewModel.todayStats.collectAsState()
     val profileSessionCounts by viewModel.profileSessionCounts.collectAsState()
+    val profileFocusTime by viewModel.profileFocusTime.collectAsState()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showBreakDialog by remember { mutableStateOf(false) }
@@ -258,6 +259,7 @@ fun HomeScreen(
                                 profile = profile,
                                 isActive = activeSession?.profileId == profile.id,
                                 sessionCount = profileSessionCounts[profile.id] ?: 0,
+                                totalFocusTimeMillis = profileFocusTime[profile.id] ?: 0L,
                                 onStart = {
                                     val strategy = BlockingStrategy.fromId(profile.blockingStrategyId)
                                     // Show timer dialog for timer-based strategies

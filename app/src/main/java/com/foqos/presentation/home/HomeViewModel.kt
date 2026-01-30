@@ -131,6 +131,19 @@ class HomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyMap()
         )
+
+    // Total focus time per profile
+    val profileFocusTime: StateFlow<Map<String, Long>> = sessionRepository
+        .getAllCompletedSessions()
+        .map { sessions ->
+            sessions.groupBy { it.profileId }
+                .mapValues { entry -> entry.value.sumOf { it.getTotalDuration() } }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyMap()
+        )
     
     fun createProfile(name: String) {
         viewModelScope.launch {

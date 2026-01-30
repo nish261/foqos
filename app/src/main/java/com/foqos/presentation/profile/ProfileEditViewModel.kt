@@ -169,6 +169,12 @@ class ProfileEditViewModel @Inject constructor(
         )
     }
 
+    fun setGradient(gradientId: Int) {
+        _profile.value = _profile.value?.copy(
+            gradientId = gradientId
+        )
+    }
+
     fun saveProfile(name: String) {
         viewModelScope.launch {
             try {
@@ -193,7 +199,8 @@ class ProfileEditViewModel @Inject constructor(
                             scheduleStartTime = profile.scheduleStartTime,
                             scheduleEndTime = profile.scheduleEndTime,
                             enableStrictMode = profile.enableStrictMode,
-                            disableBackgroundStops = profile.disableBackgroundStops
+                            disableBackgroundStops = profile.disableBackgroundStops,
+                            gradientId = profile.gradientId
                         )
                     )
                 } else {

@@ -21,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
+import com.foqos.presentation.components.GradientPicker
 import com.foqos.presentation.components.ScheduleConfig
 import com.foqos.presentation.components.ScheduleSetupDialog
 
@@ -88,7 +89,24 @@ fun ProfileEditScreen(
                     singleLine = true
                 )
             }
-            
+
+            // Gradient Picker
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Box(modifier = Modifier.padding(16.dp)) {
+                        GradientPicker(
+                            selectedGradientId = profile?.gradientId ?: 0,
+                            onGradientSelected = { viewModel.setGradient(it) }
+                        )
+                    }
+                }
+            }
+
             // Strategy Selection
             item {
                 Card(

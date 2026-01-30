@@ -25,6 +25,7 @@ fun ProfileCard(
     profile: BlockedProfileEntity,
     isActive: Boolean,
     sessionCount: Int = 0,
+    totalFocusTimeMillis: Long = 0L,
     onStart: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
@@ -135,6 +136,35 @@ fun ProfileCard(
                         value = "$sessionCount",
                         label = "sessions"
                     )
+                }
+
+                // Total Focus Time
+                if (totalFocusTimeMillis > 0) {
+                    val formattedTime = formatFocusTime(totalFocusTimeMillis)
+                    Surface(
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "🎯 Total Focus: ",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                            Text(
+                                text = formattedTime,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
 
                 // Allow Mode Indicators
@@ -273,4 +303,17 @@ private fun formatSchedule(profile: BlockedProfileEntity): String {
     }
 
     return "$dayStr $start-$end"
+}
+
+private fun formatFocusTime(millis: Long): String {
+    val totalMinutes = millis / 60000
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+
+    return when {
+        hours > 0 && minutes > 0 -> "${hours}h ${minutes}m"
+        hours > 0 -> "${hours}h"
+        minutes > 0 -> "${minutes}m"
+        else -> "< 1m"
+    }
 }

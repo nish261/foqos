@@ -8,45 +8,24 @@ plugins {
 
 android {
     namespace = "com.foqos"
-    compileSdk = 34
+    compileSdk = 33
 
     defaultConfig {
         applicationId = "com.foqos"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 33
-        versionCode = 14
-        versionName = "1.2.2"
+        versionCode = 15
+        versionName = "1.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
-
-        ndk {
-            abiFilters.clear()
-            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
-        }
-    }
-
-    signingConfigs {
-        create("release") {
-            storeFile = file("debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            isShrinkResources = false
-            isDebuggable = true
-            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isMinifyEnabled = false
-            isDebuggable = true
         }
     }
 
@@ -70,32 +49,6 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/LICENSE.md"
-            excludes += "/META-INF/LICENSE-notice.md"
-        }
-        jniLibs {
-            useLegacyPackaging = true
-        }
-    }
-
-    splits {
-        abi {
-            isEnable = false
-        }
-        density {
-            isEnable = false
-        }
-    }
-
-    bundle {
-        language {
-            enableSplit = false
-        }
-        density {
-            enableSplit = false
-        }
-        abi {
-            enableSplit = false
         }
     }
 }

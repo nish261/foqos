@@ -39,9 +39,7 @@ sealed class Screen(val route: String, val title: String, val icon: androidx.com
     object WriteNFCTag : Screen("write_nfc_tag/{profile_id}", "Write NFC Tag", Icons.Filled.Nfc) {
         fun createRoute(profileId: String) = "write_nfc_tag/$profileId"
     }
-    object QRScanner : Screen("qr_scanner", "Scan QR Code", Icons.Filled.Home) {
-        const val route = "qr_scanner"
-    }
+    object QRScanner : Screen("qr_scanner", "Scan QR Code", Icons.Filled.Home)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

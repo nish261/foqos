@@ -66,7 +66,7 @@ class ReminderWorker @AssistedInject constructor(
 
         // Build notification
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Stay Focused!")
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

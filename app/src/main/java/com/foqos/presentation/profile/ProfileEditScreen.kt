@@ -371,8 +371,8 @@ fun ProfileEditScreen(
                                 }
                             }?.joinToString(", ") ?: "No days selected"
 
-                            val timeRange = if (profile?.scheduleStartTime != null && profile.scheduleEndTime != null) {
-                                "${profile.scheduleStartTime} - ${profile.scheduleEndTime}"
+                            val timeRange = if (profile?.scheduleStartTime != null && profile?.scheduleEndTime != null) {
+                                "${profile?.scheduleStartTime} - ${profile?.scheduleEndTime}"
                             } else {
                                 "No time set"
                             }
@@ -743,13 +743,13 @@ fun ProfileEditScreen(
     // Schedule Setup Dialog
     if (showScheduleDialog) {
         val currentSchedule = if (profile?.scheduleEnabled == true &&
-            profile.scheduleDaysOfWeek != null &&
-            profile.scheduleStartTime != null &&
-            profile.scheduleEndTime != null) {
+            profile?.scheduleDaysOfWeek != null &&
+            profile?.scheduleStartTime != null &&
+            profile?.scheduleEndTime != null) {
             ScheduleConfig(
-                daysOfWeek = profile.scheduleDaysOfWeek,
-                startTime = profile.scheduleStartTime,
-                endTime = profile.scheduleEndTime
+                daysOfWeek = profile?.scheduleDaysOfWeek!!,
+                startTime = profile?.scheduleStartTime!!,
+                endTime = profile?.scheduleEndTime!!
             )
         } else null
 

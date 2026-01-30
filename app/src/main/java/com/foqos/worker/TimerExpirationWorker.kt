@@ -24,7 +24,7 @@ class TimerExpirationWorker @AssistedInject constructor(
 
             // Only end if session is still active (not already ended manually)
             if (session != null && session.endTime == null) {
-                sessionRepository.endSession()
+                sessionRepository.endSession(sessionId)
             }
 
             Result.success()

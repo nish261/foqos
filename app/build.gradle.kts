@@ -12,14 +12,19 @@ android {
 
     defaultConfig {
         applicationId = "com.foqos"
-        minSdk = 26
-        targetSdk = 34
-        versionCode = 12
-        versionName = "1.2.0"
+        minSdk = 24
+        targetSdk = 33
+        versionCode = 13
+        versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        ndk {
+            abiFilters.clear()
+            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
     }
 
@@ -56,6 +61,27 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+
+    splits {
+        abi {
+            isEnable = false
+        }
+        density {
+            isEnable = false
+        }
+    }
+
+    bundle {
+        language {
+            enableSplit = false
+        }
+        density {
+            enableSplit = false
+        }
+        abi {
+            enableSplit = false
         }
     }
 }

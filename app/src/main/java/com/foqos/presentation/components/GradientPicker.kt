@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.foqos.util.GradientPresets
 
 @Composable
 fun GradientPicker(
@@ -86,7 +87,7 @@ private fun GradientOption(
                 color = MaterialTheme.colorScheme.primary,
                 shape = CircleShape
             )
-            .background(gradient, CircleShape)
+            .background(brush = gradient, shape = CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {

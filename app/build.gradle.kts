@@ -8,14 +8,14 @@ plugins {
 
 android {
     namespace = "com.foqos"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.foqos"
         minSdk = 26
-        targetSdk = 33
-        versionCode = 15
-        versionName = "1.2.3"
+        targetSdk = 30
+        versionCode = 16
+        versionName = "1.2.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

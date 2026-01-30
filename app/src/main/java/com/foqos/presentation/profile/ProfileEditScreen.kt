@@ -112,6 +112,130 @@ fun ProfileEditScreen(
                 }
             }
 
+            // Block All Browsers Toggle
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (profile?.blockAllBrowsers == true)
+                            MaterialTheme.colorScheme.tertiaryContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Block All Browsers",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "Automatically blocks Chrome, Firefox, Safari, and all other browsers",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = profile?.blockAllBrowsers ?: false,
+                            onCheckedChange = { viewModel.toggleBlockAllBrowsers() }
+                        )
+                    }
+                }
+            }
+
+            // Reminder System
+            item {
+                val reminderEnabled = profile?.reminderTimeInSeconds != null
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (reminderEnabled)
+                            MaterialTheme.colorScheme.tertiaryContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Focus Reminders",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Periodic notifications to help you stay focused during sessions",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = reminderEnabled,
+                                onCheckedChange = { viewModel.toggleReminders() }
+                            )
+                        }
+
+                        if (reminderEnabled) {
+                            // Time interval selector
+                            Text(
+                                "Reminder Interval",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                val intervals = listOf(
+                                    300 to "5 min",
+                                    600 to "10 min",
+                                    900 to "15 min",
+                                    1800 to "30 min"
+                                )
+                                intervals.forEach { (seconds, label) ->
+                                    FilterChip(
+                                        selected = profile?.reminderTimeInSeconds == seconds,
+                                        onClick = { viewModel.setReminderInterval(seconds) },
+                                        label = { Text(label) },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+
+                            // Custom message
+                            OutlinedTextField(
+                                value = profile?.customReminderMessage ?: "",
+                                onValueChange = { viewModel.setReminderMessage(it) },
+                                label = { Text("Custom Message (optional)") },
+                                placeholder = { Text("You're doing great! Keep focusing...") },
+                                modifier = Modifier.fillMaxWidth(),
+                                maxLines = 2,
+                                supportingText = {
+                                    Text(
+                                        "Leave blank for default message",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
             // NFC Tag Management
             profile?.let { currentProfile ->
                 if (selectedStrategy.id == "nfc") {

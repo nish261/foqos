@@ -38,6 +38,7 @@ data class BlockedProfileSessionEntity(
     // Allow Mode flags
     val appsAllowMode: Boolean = false,        // If true, only allow apps in blockedApps list
     val domainsAllowMode: Boolean = false,     // If true, only allow domains in blockedDomains list
+    val blockAllBrowsers: Boolean = false,     // If true, block all browser apps
     
     // Emergency unlock tracking
     val emergencyUnlockAttemptsUsed: Int = 0,

@@ -31,6 +31,9 @@ data class BlockedProfileEntity(
     // Allow Mode (Inverse Blocking)
     val appsAllowMode: Boolean = false,           // If true, only allow selected apps (block everything else)
     val domainsAllowMode: Boolean = false,        // If true, only allow selected domains (block everything else)
+
+    // Block All Browsers
+    val blockAllBrowsers: Boolean = false,        // If true, automatically block all browser apps
     
     // Website blocking
     val domains: List<String>? = null,

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.foqos.data.local.entity.BlockedProfileEntity
@@ -11,6 +12,7 @@ import com.foqos.data.local.entity.BlockedProfileSessionEntity
 import com.foqos.data.repository.ProfileRepository
 import com.foqos.presentation.components.TodayStats
 import com.foqos.worker.TimerExpirationWorker
+import com.foqos.worker.ReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
@@ -176,12 +178,22 @@ class HomeViewModel @Inject constructor(
                     blockedDomains = profile.domains ?: emptyList(),
                     timerDurationMinutes = timerDurationMinutes,
                     appsAllowMode = profile.appsAllowMode,
-                    domainsAllowMode = profile.domainsAllowMode
+                    domainsAllowMode = profile.domainsAllowMode,
+                    blockAllBrowsers = profile.blockAllBrowsers
                 )
 
                 // Schedule timer expiration worker if timer is set
                 if (timerDurationMinutes != null) {
                     scheduleTimerExpiration(session.id, timerDurationMinutes)
+                }
+
+                // Schedule reminder notifications if enabled
+                if (profile.reminderTimeInSeconds != null) {
+                    scheduleReminders(
+                        session.id,
+                        profile.reminderTimeInSeconds,
+                        profile.customReminderMessage
+                    )
                 }
 
                 _uiState.value = HomeUiState.Success("Session started")
@@ -203,9 +215,32 @@ class HomeViewModel @Inject constructor(
             .enqueue(workRequest)
     }
 
+    private fun scheduleReminders(sessionId: String, intervalSeconds: Int, customMessage: String?) {
+        val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
+            intervalSeconds.toLong(),
+            TimeUnit.SECONDS
+        )
+            .setInputData(
+                workDataOf(
+                    ReminderWorker.KEY_SESSION_ID to sessionId,
+                    ReminderWorker.KEY_MESSAGE to (customMessage ?: ReminderWorker.DEFAULT_MESSAGE)
+                )
+            )
+            .addTag("${ReminderWorker.WORK_NAME_PREFIX}$sessionId")
+            .build()
+
+        WorkManager.getInstance(context)
+            .enqueue(workRequest)
+    }
+
     fun cancelTimer(sessionId: String) {
         WorkManager.getInstance(context)
             .cancelAllWorkByTag("${TimerExpirationWorker.WORK_NAME_PREFIX}$sessionId")
+    }
+
+    fun cancelReminders(sessionId: String) {
+        WorkManager.getInstance(context)
+            .cancelAllWorkByTag("${ReminderWorker.WORK_NAME_PREFIX}$sessionId")
     }
     
     fun stopSession() {
@@ -221,6 +256,11 @@ class HomeViewModel @Inject constructor(
                     }
 
                     sessionRepository.endSession(session.id)
+
+                    // Cancel any scheduled workers
+                    cancelTimer(session.id)
+                    cancelReminders(session.id)
+
                     _uiState.value = HomeUiState.Success("Session ended")
                 } else {
                     _uiState.value = HomeUiState.Error("No active session")
@@ -325,6 +365,10 @@ class HomeViewModel @Inject constructor(
 
                 // End session
                 sessionRepository.endSession(session.id)
+
+                // Cancel any scheduled workers
+                cancelTimer(session.id)
+                cancelReminders(session.id)
 
                 val remaining = maxAttempts - newAttemptsUsed
                 val message = if (remaining > 0) {

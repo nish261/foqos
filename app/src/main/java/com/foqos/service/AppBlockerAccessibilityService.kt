@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import com.foqos.data.repository.SessionRepository
+import com.foqos.util.BrowserPackages
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,7 @@ class AppBlockerAccessibilityService : AccessibilityService() {
     private var blockedApps: Set<String> = emptySet()
     private var isActive = false
     private var appsAllowMode = false  // If true, block everything EXCEPT blockedApps
+    private var blockAllBrowsers = false  // If true, block all browser apps
     
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -52,13 +54,20 @@ class AppBlockerAccessibilityService : AccessibilityService() {
                 return
             }
             
-            // Check if this app should be blocked based on mode
-            val shouldBlock = if (appsAllowMode) {
-                // Allow mode: block everything EXCEPT apps in the list
-                !blockedApps.contains(packageName)
-            } else {
-                // Block mode: block apps IN the list
-                blockedApps.contains(packageName)
+            // Check if this app should be blocked
+            val shouldBlock = when {
+                // Block all browsers if enabled
+                blockAllBrowsers && BrowserPackages.isBrowser(packageName) -> true
+
+                // Check allow/block mode
+                appsAllowMode -> {
+                    // Allow mode: block everything EXCEPT apps in the list
+                    !blockedApps.contains(packageName)
+                }
+                else -> {
+                    // Block mode: block apps IN the list
+                    blockedApps.contains(packageName)
+                }
             }
 
             if (shouldBlock) {
@@ -85,10 +94,12 @@ class AppBlockerAccessibilityService : AccessibilityService() {
                 if (session != null) {
                     blockedApps = session.blockedApps.toSet()
                     appsAllowMode = session.appsAllowMode
+                    blockAllBrowsers = session.blockAllBrowsers
                     isActive = true
                 } else {
                     blockedApps = emptySet()
                     appsAllowMode = false
+                    blockAllBrowsers = false
                     isActive = false
                 }
             }

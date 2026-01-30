@@ -115,6 +115,32 @@ class ProfileEditViewModel @Inject constructor(
         )
     }
 
+    fun toggleBlockAllBrowsers() {
+        _profile.value = _profile.value?.copy(
+            blockAllBrowsers = !(_profile.value?.blockAllBrowsers ?: false)
+        )
+    }
+
+    fun toggleReminders() {
+        val currentValue = _profile.value?.reminderTimeInSeconds
+        _profile.value = _profile.value?.copy(
+            reminderTimeInSeconds = if (currentValue == null) 300 else null, // Default 5 minutes
+            customReminderMessage = if (currentValue == null) null else _profile.value?.customReminderMessage
+        )
+    }
+
+    fun setReminderInterval(seconds: Int) {
+        _profile.value = _profile.value?.copy(
+            reminderTimeInSeconds = seconds
+        )
+    }
+
+    fun setReminderMessage(message: String) {
+        _profile.value = _profile.value?.copy(
+            customReminderMessage = message.ifBlank { null }
+        )
+    }
+
     fun saveProfile(name: String) {
         viewModelScope.launch {
             try {
@@ -130,7 +156,10 @@ class ProfileEditViewModel @Inject constructor(
                             blockingStrategyId = _selectedStrategy.value.id,
                             domains = _domains.value.takeIf { it.isNotEmpty() },
                             appsAllowMode = profile.appsAllowMode,
-                            domainsAllowMode = profile.domainsAllowMode
+                            domainsAllowMode = profile.domainsAllowMode,
+                            blockAllBrowsers = profile.blockAllBrowsers,
+                            reminderTimeInSeconds = profile.reminderTimeInSeconds,
+                            customReminderMessage = profile.customReminderMessage
                         )
                     )
                 } else {

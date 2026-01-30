@@ -15,7 +15,7 @@ import com.foqos.data.local.entity.BlockedProfileSessionEntity
         BlockedProfileEntity::class,
         BlockedProfileSessionEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

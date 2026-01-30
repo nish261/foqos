@@ -58,7 +58,8 @@ class SessionRepository @Inject constructor(
         blockedDomains: List<String> = emptyList(),
         timerDurationMinutes: Int? = null,
         appsAllowMode: Boolean = false,
-        domainsAllowMode: Boolean = false
+        domainsAllowMode: Boolean = false,
+        blockAllBrowsers: Boolean = false
     ): BlockedProfileSessionEntity {
         val session = BlockedProfileSessionEntity(
             profileId = profileId,
@@ -69,7 +70,8 @@ class SessionRepository @Inject constructor(
             blockedDomains = blockedDomains,
             timerDurationMinutes = timerDurationMinutes,
             appsAllowMode = appsAllowMode,
-            domainsAllowMode = domainsAllowMode
+            domainsAllowMode = domainsAllowMode,
+            blockAllBrowsers = blockAllBrowsers
         )
         sessionDao.insertSession(session)
         return session

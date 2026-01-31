@@ -14,8 +14,8 @@ android {
         applicationId = "com.foqos"
         minSdk = 26
         targetSdk = 30
-        versionCode = 20
-        versionName = "1.1.1-stable"
+        versionCode = 21
+        versionName = "1.0-minimal"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -3,12 +3,8 @@ package com.foqos.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foqos.data.local.entity.BlockedProfileEntity
-import com.foqos.data.local.entity.BlockedProfileSessionEntity
 import com.foqos.data.repository.ProfileRepository
 import com.foqos.data.repository.SessionRepository
-import com.foqos.nfc.NFCActionHandler
-import com.foqos.nfc.NFCActionResult
-import com.foqos.nfc.NFCReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -17,33 +13,9 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
-    private val sessionRepository: SessionRepository,
-    private val nfcReader: NFCReader,
-    private val nfcActionHandler: NFCActionHandler
+    private val sessionRepository: SessionRepository
 ) : ViewModel() {
 
-    init {
-        // Listen for NFC tags
-        viewModelScope.launch {
-            nfcReader.tagScanned.collect { tag ->
-                // Only process if there's an active session
-                if (activeSession.value != null) {
-                    nfcActionHandler.handleTag(tag)
-                }
-            }
-        }
-
-        // Listen for NFC action results
-        viewModelScope.launch {
-            nfcActionHandler.actionResult.collect { result ->
-                when (result) {
-                    is NFCActionResult.Success -> _uiState.value = HomeUiState.Success(result.message)
-                    is NFCActionResult.Error -> _uiState.value = HomeUiState.Error(result.message)
-                }
-            }
-        }
-    }
-    
     val profiles: StateFlow<List<BlockedProfileEntity>> = profileRepository
         .getAllProfiles()
         .stateIn(
@@ -51,56 +23,30 @@ class HomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-    
-    val activeSession: StateFlow<BlockedProfileSessionEntity?> = sessionRepository
+
+    val activeSession = sessionRepository
         .getActiveSessionFlow()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = null
         )
-    
+
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Idle)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-    
-    fun createProfile(name: String) {
-        viewModelScope.launch {
-            try {
-                _uiState.value = HomeUiState.Loading
-                profileRepository.createProfile(name = name)
-                _uiState.value = HomeUiState.Success("Profile created")
-            } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Failed to create profile")
-            }
-        }
-    }
-    
-    fun deleteProfile(profile: BlockedProfileEntity) {
-        viewModelScope.launch {
-            try {
-                // Delete all sessions for this profile first
-                sessionRepository.deleteSessionsForProfile(profile.id)
-                // Then delete the profile
-                profileRepository.deleteProfile(profile)
-                _uiState.value = HomeUiState.Success("Profile deleted")
-            } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Failed to delete profile")
-            }
-        }
-    }
-    
+
     fun startSession(profile: BlockedProfileEntity) {
         viewModelScope.launch {
             try {
                 _uiState.value = HomeUiState.Loading
-                
+
                 // Check if there's already an active session
                 val existingSession = sessionRepository.getActiveSession()
                 if (existingSession != null) {
                     _uiState.value = HomeUiState.Error("A session is already active")
                     return@launch
                 }
-                
+
                 // Start new session
                 sessionRepository.startSession(
                     profileId = profile.id,
@@ -108,26 +54,20 @@ class HomeViewModel @Inject constructor(
                     blockedApps = profile.selectedApps,
                     blockedDomains = profile.domains ?: emptyList()
                 )
-                
+
                 _uiState.value = HomeUiState.Success("Session started")
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Failed to start session")
             }
         }
     }
-    
+
     fun stopSession() {
         viewModelScope.launch {
             try {
                 _uiState.value = HomeUiState.Loading
                 val session = sessionRepository.getActiveSession()
                 if (session != null) {
-                    // Check if remote lock is active
-                    if (session.remoteLockActivatedTime != null) {
-                        _uiState.value = HomeUiState.Error("Remote lock active. Use NFC to unlock")
-                        return@launch
-                    }
-
                     sessionRepository.endSession(session.id)
                     _uiState.value = HomeUiState.Success("Session ended")
                 } else {
@@ -138,164 +78,15 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
-    fun clearUiState() {
-        _uiState.value = HomeUiState.Idle
-    }
 
-    fun startBreak(duration: Int) {
+    fun deleteProfile(profile: BlockedProfileEntity) {
         viewModelScope.launch {
             try {
-                val session = sessionRepository.getActiveSession()
-                if (session == null) {
-                    _uiState.value = HomeUiState.Error("No active session")
-                    return@launch
-                }
-
-                if (session.breakStartTime != null) {
-                    _uiState.value = HomeUiState.Error("Already on break")
-                    return@launch
-                }
-
-                sessionRepository.startBreak(session.id)
-                _uiState.value = HomeUiState.Success("Break started")
+                _uiState.value = HomeUiState.Loading
+                profileRepository.deleteProfile(profile)
+                _uiState.value = HomeUiState.Success("Profile deleted")
             } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Failed to start break")
-            }
-        }
-    }
-
-    fun endBreak() {
-        viewModelScope.launch {
-            try {
-                val session = sessionRepository.getActiveSession()
-                if (session == null) {
-                    _uiState.value = HomeUiState.Error("No active session")
-                    return@launch
-                }
-
-                if (session.breakStartTime == null) {
-                    _uiState.value = HomeUiState.Error("Not on break")
-                    return@launch
-                }
-
-                sessionRepository.endBreak(session.id)
-                _uiState.value = HomeUiState.Success("Break ended")
-            } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Failed to end break")
-            }
-        }
-    }
-
-    fun useEmergencyUnlock() {
-        viewModelScope.launch {
-            try {
-                val session = sessionRepository.getActiveSession()
-                if (session == null) {
-                    _uiState.value = HomeUiState.Error("No active session")
-                    return@launch
-                }
-
-                // Get profile to check max attempts
-                val profile = profileRepository.getProfileById(session.profileId)
-                if (profile == null || !profile.emergencyUnlockEnabled) {
-                    _uiState.value = HomeUiState.Error("Emergency unlock not enabled")
-                    return@launch
-                }
-
-                // Check cooldown
-                val now = System.currentTimeMillis()
-                if (session.emergencyUnlockCooldownUntil != null && now < session.emergencyUnlockCooldownUntil) {
-                    val remainingMinutes = ((session.emergencyUnlockCooldownUntil - now) / 60000).toInt()
-                    _uiState.value = HomeUiState.Error("Cooldown active. Wait $remainingMinutes more minutes")
-                    return@launch
-                }
-
-                // Check attempts remaining
-                val attemptsUsed = session.emergencyUnlockAttemptsUsed
-                val maxAttempts = profile.emergencyUnlockAttempts
-
-                if (attemptsUsed >= maxAttempts) {
-                    // Apply cooldown
-                    val cooldownUntil = now + (profile.emergencyUnlockCooldownMinutes * 60000L)
-                    sessionRepository.updateEmergencyUnlockAttempts(session.id, attemptsUsed, cooldownUntil)
-                    _uiState.value = HomeUiState.Error("All attempts used. ${profile.emergencyUnlockCooldownMinutes}min cooldown activated")
-                    return@launch
-                }
-
-                // Use attempt
-                val newAttemptsUsed = attemptsUsed + 1
-                val cooldownUntil = if (newAttemptsUsed >= maxAttempts) {
-                    now + (profile.emergencyUnlockCooldownMinutes * 60000L)
-                } else null
-
-                sessionRepository.updateEmergencyUnlockAttempts(session.id, newAttemptsUsed, cooldownUntil)
-
-                // End session
-                sessionRepository.endSession(session.id)
-
-                val remaining = maxAttempts - newAttemptsUsed
-                val message = if (remaining > 0) {
-                    "Emergency unlock used. $remaining attempts remaining"
-                } else {
-                    "Last emergency attempt used. Cooldown activated"
-                }
-                _uiState.value = HomeUiState.Success(message)
-            } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Emergency unlock failed")
-            }
-        }
-    }
-
-    fun activateRemoteLock(deviceName: String) {
-        viewModelScope.launch {
-            try {
-                val session = sessionRepository.getActiveSession()
-                if (session == null) {
-                    _uiState.value = HomeUiState.Error("No active session")
-                    return@launch
-                }
-
-                // Check if profile has NFC tags configured
-                val profile = profileRepository.getProfileById(session.profileId)
-                if (profile?.nfcTagsJson.isNullOrBlank()) {
-                    _uiState.value = HomeUiState.Error("No NFC tags configured. Add NFC unlock tag first")
-                    return@launch
-                }
-
-                if (profile?.remoteLockEnabled != true) {
-                    _uiState.value = HomeUiState.Error("Remote lock not enabled in profile")
-                    return@launch
-                }
-
-                sessionRepository.activateRemoteLock(session.id, deviceName)
-                _uiState.value = HomeUiState.Success("Remote lock activated. NFC required to unlock")
-            } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Failed to activate remote lock")
-            }
-        }
-    }
-
-    fun pauseSession() {
-        viewModelScope.launch {
-            try {
-                val session = sessionRepository.getActiveSession()
-                if (session == null) {
-                    _uiState.value = HomeUiState.Error("No active session")
-                    return@launch
-                }
-
-                if (session.breakStartTime != null) {
-                    // Already paused, resume
-                    sessionRepository.endBreak(session.id)
-                    _uiState.value = HomeUiState.Success("Session resumed")
-                } else {
-                    // Not paused, pause
-                    sessionRepository.startBreak(session.id)
-                    _uiState.value = HomeUiState.Success("Session paused")
-                }
-            } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Failed to pause/resume session")
+                _uiState.value = HomeUiState.Error(e.message ?: "Failed to delete profile")
             }
         }
     }

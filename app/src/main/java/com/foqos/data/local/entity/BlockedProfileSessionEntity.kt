@@ -6,7 +6,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.foqos.data.local.Converters
-import kotlinx.serialization.Serializable
 import java.util.UUID
 
 @Entity(
@@ -28,37 +27,14 @@ data class BlockedProfileSessionEntity(
     val profileId: String,
     val startTime: Long,
     val endTime: Long? = null,
-    val pausedDurations: List<PausedDuration> = emptyList(),
     val strategyId: String,
-    val strategyStartData: String? = null,
     val blockedApps: List<String> = emptyList(),
-    val blockedDomains: List<String> = emptyList(),
-    val timerDurationMinutes: Int? = null,
-    
-    // Emergency unlock tracking
-    val emergencyUnlockAttemptsUsed: Int = 0,
-    val lastEmergencyAttemptTime: Long? = null,
-    val emergencyUnlockCooldownUntil: Long? = null,
-    
-    // Remote lock state
-    val remoteLockActivatedTime: Long? = null,
-    val remoteLockActivatedBy: String? = null,
-
-    // Break/Pause state (for current active pause)
-    val breakStartTime: Long? = null
+    val blockedDomains: List<String> = emptyList()
 ) {
-    @Serializable
-    data class PausedDuration(
-        val startTime: Long,
-        val endTime: Long
-    )
-    
     fun getTotalDuration(): Long {
         val end = endTime ?: System.currentTimeMillis()
-        val totalPausedTime = pausedDurations.sumOf { it.endTime - it.startTime }
-        return (end - startTime) - totalPausedTime
+        return end - startTime
     }
-    
+
     fun isActive(): Boolean = endTime == null
 }
-

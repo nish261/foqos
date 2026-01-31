@@ -47,28 +47,62 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: startsWith(github.ref, 'refs/tags/v')
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Set up JDK 17
+    - name: Set up JDK 11
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '11'
         distribution: 'temurin'
         cache: gradle
-        
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-      
-    - name: Upload Release Asset
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug --stacktrace
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Foqos ${{ github.ref_name }}
+        body: |
+          # Foqos ${{ github.ref_name }}
+
+          Download the APK below and install on your Android device.
+
+          **Requirements:**
+          - Android 8.0 or higher
+          - Enable "Install from Unknown Sources"
+
+          **Installation:**
+          1. Download the APK file below
+          2. Open and install
+          3. Grant required permissions (Accessibility and Usage Stats)
+
+          🤖 Built with Claude Code
+        draft: false
+        prerelease: false
+
+    - name: Rename APK
+      run: |
+        cp app/build/outputs/apk/debug/app-debug.apk foqos-${{ github.ref_name }}.apk
+        ls -lh foqos-${{ github.ref_name }}.apk
+
+    - name: Upload Debug APK
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: app/build/outputs/apk/release/app-release-unsigned.apk
-        asset_name: foqos-${{ github.event.release.tag_name }}.apk
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: foqos-${{ github.ref_name }}.apk
+        asset_name: foqos-${{ github.ref_name }}.apk
         asset_content_type: application/vnd.android.package-archive

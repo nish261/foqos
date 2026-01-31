@@ -181,15 +181,6 @@ class HomeViewModel @Inject constructor(
                     return@launch
                 }
 
-                // Check schedule restrictions
-                if (profile.scheduleEnabled) {
-                    val scheduleError = checkScheduleRestrictions(profile)
-                    if (scheduleError != null) {
-                        _uiState.value = HomeUiState.Error(scheduleError)
-                        return@launch
-                    }
-                }
-
                 // Start new session
                 val session = sessionRepository.startSession(
                     profileId = profile.id,
@@ -394,49 +385,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun checkScheduleRestrictions(profile: BlockedProfileEntity): String? {
-        if (!profile.scheduleEnabled) return null
-
-        val calendar = Calendar.getInstance()
-        val currentDayOfWeek = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.MONDAY -> 1
-            Calendar.TUESDAY -> 2
-            Calendar.WEDNESDAY -> 3
-            Calendar.THURSDAY -> 4
-            Calendar.FRIDAY -> 5
-            Calendar.SATURDAY -> 6
-            Calendar.SUNDAY -> 7
-            else -> 1
-        }
-
-        // Check if current day is allowed
-        val allowedDays = profile.scheduleDaysOfWeek ?: return "No schedule days configured"
-        if (!allowedDays.contains(currentDayOfWeek)) {
-            val dayNames = listOf("", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-            val allowedDayNames = allowedDays.mapNotNull { dayNames.getOrNull(it) }.joinToString(", ")
-            return "Session not allowed today. Allowed days: $allowedDayNames"
-        }
-
-        // Check if current time is within allowed range
-        val startTime = profile.scheduleStartTime ?: return "No start time configured"
-        val endTime = profile.scheduleEndTime ?: return "No end time configured"
-
-        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-        val currentMinute = calendar.get(Calendar.MINUTE)
-        val currentTimeMinutes = currentHour * 60 + currentMinute
-
-        val startParts = startTime.split(":")
-        val startMinutes = startParts[0].toInt() * 60 + startParts[1].toInt()
-
-        val endParts = endTime.split(":")
-        val endMinutes = endParts[0].toInt() * 60 + endParts[1].toInt()
-
-        if (currentTimeMinutes < startMinutes || currentTimeMinutes > endMinutes) {
-            return "Session not allowed at this time. Allowed: $startTime - $endTime"
-        }
-
-        return null
-    }
 }
 
 sealed class HomeUiState {

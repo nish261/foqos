@@ -8,7 +8,6 @@ import com.foqos.data.repository.ProfileRepository
 import com.foqos.domain.model.BlockingStrategy
 import com.foqos.domain.model.NFCTagConfig
 import com.foqos.domain.model.NFCTagMode
-import com.foqos.presentation.components.ScheduleConfig
 import com.foqos.util.AppListProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -113,59 +112,6 @@ class ProfileEditViewModel @Inject constructor(
     fun toggleDomainsAllowMode() {
         _profile.value = _profile.value?.copy(
             domainsAllowMode = !(_profile.value?.domainsAllowMode ?: false)
-        )
-    }
-
-    fun toggleBlockAllBrowsers() {
-        _profile.value = _profile.value?.copy(
-            blockAllBrowsers = !(_profile.value?.blockAllBrowsers ?: false)
-        )
-    }
-
-    fun toggleReminders() {
-        val currentValue = _profile.value?.reminderTimeInSeconds
-        _profile.value = _profile.value?.copy(
-            reminderTimeInSeconds = if (currentValue == null) 300 else null, // Default 5 minutes
-            customReminderMessage = if (currentValue == null) null else _profile.value?.customReminderMessage
-        )
-    }
-
-    fun setReminderInterval(seconds: Int) {
-        _profile.value = _profile.value?.copy(
-            reminderTimeInSeconds = seconds
-        )
-    }
-
-    fun setReminderMessage(message: String) {
-        _profile.value = _profile.value?.copy(
-            customReminderMessage = message.ifBlank { null }
-        )
-    }
-
-    fun toggleSchedule() {
-        _profile.value = _profile.value?.copy(
-            scheduleEnabled = !(_profile.value?.scheduleEnabled ?: false)
-        )
-    }
-
-    fun setSchedule(schedule: ScheduleConfig) {
-        _profile.value = _profile.value?.copy(
-            scheduleEnabled = true,
-            scheduleDaysOfWeek = schedule.daysOfWeek,
-            scheduleStartTime = schedule.startTime,
-            scheduleEndTime = schedule.endTime
-        )
-    }
-
-    fun toggleStrictMode() {
-        _profile.value = _profile.value?.copy(
-            enableStrictMode = !(_profile.value?.enableStrictMode ?: false)
-        )
-    }
-
-    fun toggleDisableBackgroundStops() {
-        _profile.value = _profile.value?.copy(
-            disableBackgroundStops = !(_profile.value?.disableBackgroundStops ?: false)
         )
     }
 

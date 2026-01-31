@@ -11,8 +11,6 @@ import com.foqos.data.local.entity.BlockedProfileEntity
 import com.foqos.data.local.entity.BlockedProfileSessionEntity
 import com.foqos.data.repository.ProfileRepository
 import com.foqos.presentation.components.TodayStats
-import com.foqos.worker.TimerExpirationWorker
-import com.foqos.worker.ReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
@@ -204,20 +202,6 @@ class HomeViewModel @Inject constructor(
                     blockAllBrowsers = profile.blockAllBrowsers
                 )
 
-                // Schedule timer expiration worker if timer is set
-                if (timerDurationMinutes != null) {
-                    scheduleTimerExpiration(session.id, timerDurationMinutes)
-                }
-
-                // Schedule reminder notifications if enabled
-                if (profile.reminderTimeInSeconds != null) {
-                    scheduleReminders(
-                        session.id,
-                        profile.reminderTimeInSeconds,
-                        profile.customReminderMessage
-                    )
-                }
-
                 _uiState.value = HomeUiState.Success("Session started")
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Failed to start session")
@@ -225,46 +209,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun scheduleTimerExpiration(sessionId: String, durationMinutes: Int) {
-        val workRequest = OneTimeWorkRequestBuilder<TimerExpirationWorker>()
-            .setInitialDelay(durationMinutes.toLong(), TimeUnit.MINUTES)
-            .setInputData(
-                workDataOf(TimerExpirationWorker.KEY_SESSION_ID to sessionId)
-            )
-            .build()
-
-        WorkManager.getInstance(context)
-            .enqueue(workRequest)
-    }
-
-    private fun scheduleReminders(sessionId: String, intervalSeconds: Int, customMessage: String?) {
-        val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
-            intervalSeconds.toLong(),
-            TimeUnit.SECONDS
-        )
-            .setInputData(
-                workDataOf(
-                    ReminderWorker.KEY_SESSION_ID to sessionId,
-                    ReminderWorker.KEY_MESSAGE to (customMessage ?: ReminderWorker.DEFAULT_MESSAGE)
-                )
-            )
-            .addTag("${ReminderWorker.WORK_NAME_PREFIX}$sessionId")
-            .build()
-
-        WorkManager.getInstance(context)
-            .enqueue(workRequest)
-    }
-
-    fun cancelTimer(sessionId: String) {
-        WorkManager.getInstance(context)
-            .cancelAllWorkByTag("${TimerExpirationWorker.WORK_NAME_PREFIX}$sessionId")
-    }
-
-    fun cancelReminders(sessionId: String) {
-        WorkManager.getInstance(context)
-            .cancelAllWorkByTag("${ReminderWorker.WORK_NAME_PREFIX}$sessionId")
-    }
-    
     fun stopSession() {
         viewModelScope.launch {
             try {
@@ -278,10 +222,6 @@ class HomeViewModel @Inject constructor(
                     }
 
                     sessionRepository.endSession(session.id)
-
-                    // Cancel any scheduled workers
-                    cancelTimer(session.id)
-                    cancelReminders(session.id)
 
                     _uiState.value = HomeUiState.Success("Session ended")
                 } else {
@@ -387,10 +327,6 @@ class HomeViewModel @Inject constructor(
 
                 // End session
                 sessionRepository.endSession(session.id)
-
-                // Cancel any scheduled workers
-                cancelTimer(session.id)
-                cancelReminders(session.id)
 
                 val remaining = maxAttempts - newAttemptsUsed
                 val message = if (remaining > 0) {

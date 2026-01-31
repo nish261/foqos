@@ -14,8 +14,8 @@ android {
         applicationId = "com.foqos"
         minSdk = 26
         targetSdk = 30
-        versionCode = 17
-        versionName = "1.2.5"
+        versionCode = 19
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

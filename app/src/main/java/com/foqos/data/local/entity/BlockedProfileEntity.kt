@@ -14,6 +14,7 @@ data class BlockedProfileEntity(
     val name: String,
     val selectedApps: List<String> = emptyList(),
     val domains: List<String>? = null,
-    val blockingStrategyId: String = "manual",
+    val blockingStrategyId: String = "nfc",
+    val nfcTagsJson: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 )

@@ -40,51 +40,16 @@ class NFCActionHandler @Inject constructor(
         val matchingTag = configuredTags.firstOrNull { it.tagId == tagId }
 
         if (matchingTag == null) {
-            _actionResult.emit(NFCActionResult.Error("Unknown NFC tag"))
+            _actionResult.emit(NFCActionResult.Error("Unknown NFC tag. Write this tag to the profile first."))
             return
         }
 
-        // Handle the action based on the tag mode
-        when (matchingTag.mode) {
-            NFCTagMode.UNLOCK -> {
-                sessionRepository.endSession(activeSession.id)
-                _actionResult.emit(NFCActionResult.Success("Session ended"))
-            }
-
-            NFCTagMode.PAUSE -> {
-                if (activeSession.breakStartTime != null) {
-                    _actionResult.emit(NFCActionResult.Error("Already paused"))
-                } else {
-                    sessionRepository.startBreak(activeSession.id)
-                    _actionResult.emit(NFCActionResult.Success("Session paused"))
-                }
-            }
-
-            NFCTagMode.RESUME -> {
-                if (activeSession.breakStartTime == null) {
-                    _actionResult.emit(NFCActionResult.Error("Not paused"))
-                } else {
-                    sessionRepository.endBreak(activeSession.id)
-                    _actionResult.emit(NFCActionResult.Success("Session resumed"))
-                }
-            }
-
-            NFCTagMode.EMERGENCY -> {
-                // Emergency bypass - end session regardless of cooldowns
-                sessionRepository.endSession(activeSession.id)
-                _actionResult.emit(NFCActionResult.Success("Emergency unlock activated"))
-            }
-
-            NFCTagMode.REMOTE_LOCK_TOGGLE -> {
-                if (activeSession.remoteLockActivatedTime != null) {
-                    // Deactivate remote lock
-                    sessionRepository.deactivateRemoteLock(activeSession.id)
-                    _actionResult.emit(NFCActionResult.Success("Remote lock deactivated"))
-                } else {
-                    // This shouldn't happen via NFC, but handle it gracefully
-                    _actionResult.emit(NFCActionResult.Error("Remote lock not active"))
-                }
-            }
+        // Only handle UNLOCK mode in minimal version
+        if (matchingTag.mode == NFCTagMode.UNLOCK) {
+            sessionRepository.endSession(activeSession.id)
+            _actionResult.emit(NFCActionResult.Success("Session unlocked with NFC tag"))
+        } else {
+            _actionResult.emit(NFCActionResult.Error("This tag mode is not supported"))
         }
     }
 }

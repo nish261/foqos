@@ -51,7 +51,7 @@ class ProfileEditViewModel @Inject constructor(
     }
     
     private fun loadProfile() {
-        if (profileId != null) {
+        if (profileId != null && profileId != "new") {
             viewModelScope.launch {
                 val profile = profileRepository.getProfileById(profileId)
                 if (profile != null) {
@@ -137,7 +137,7 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     private fun loadNFCTags() {
-        if (profileId != null) {
+        if (profileId != null && profileId != "new") {
             viewModelScope.launch {
                 val tags = profileRepository.getNFCTags(profileId)
                 _nfcTags.value = tags

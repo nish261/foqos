@@ -23,40 +23,50 @@ class AppListProvider @Inject constructor(
      * Get all user-installed apps (excludes system apps).
      */
     suspend fun getUserApps(): List<AppInfo> = withContext(Dispatchers.IO) {
-        val packageManager = context.packageManager
-        val packages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-        
-        packages
-            .filter { app ->
-                // Filter out system apps
-                (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
-            }
-            .map { app ->
-                AppInfo(
-                    packageName = app.packageName,
-                    appName = app.loadLabel(packageManager).toString(),
-                    icon = app.loadIcon(packageManager)
-                )
-            }
-            .sortedBy { it.appName.lowercase() }
+        try {
+            val packageManager = context.packageManager
+            val packages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+
+            packages
+                .filter { app ->
+                    // Filter out system apps
+                    (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                }
+                .map { app ->
+                    AppInfo(
+                        packageName = app.packageName,
+                        appName = app.loadLabel(packageManager).toString(),
+                        icon = app.loadIcon(packageManager)
+                    )
+                }
+                .sortedBy { it.appName.lowercase() }
+        } catch (e: Exception) {
+            // Return empty list if we can't query apps
+            emptyList()
+        }
     }
     
     /**
      * Get all apps including system apps.
      */
     suspend fun getAllApps(): List<AppInfo> = withContext(Dispatchers.IO) {
-        val packageManager = context.packageManager
-        val packages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-        
-        packages
-            .map { app ->
-                AppInfo(
-                    packageName = app.packageName,
-                    appName = app.loadLabel(packageManager).toString(),
-                    icon = app.loadIcon(packageManager)
-                )
-            }
-            .sortedBy { it.appName.lowercase() }
+        try {
+            val packageManager = context.packageManager
+            val packages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+
+            packages
+                .map { app ->
+                    AppInfo(
+                        packageName = app.packageName,
+                        appName = app.loadLabel(packageManager).toString(),
+                        icon = app.loadIcon(packageManager)
+                    )
+                }
+                .sortedBy { it.appName.lowercase() }
+        } catch (e: Exception) {
+            // Return empty list if we can't query apps
+            emptyList()
+        }
     }
     
     /**

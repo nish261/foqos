@@ -1,58 +1,18 @@
-name: Android CI - Build APK
+name: Build and Release APK
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
-  release:
-    types: [created]
+    tags:
+      - 'v*'
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
-    
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
-      
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-      
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: foqos-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
-        
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: foqos-release-unsigned
-        path: app/build/outputs/apk/release/app-release-unsigned.apk
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up JDK 11
       uses: actions/setup-java@v4
       with:
@@ -92,17 +52,12 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Rename APK
-      run: |
-        cp app/build/outputs/apk/debug/app-debug.apk foqos-${{ github.ref_name }}.apk
-        ls -lh foqos-${{ github.ref_name }}.apk
-
-    - name: Upload Debug APK
+    - name: Upload APK to Release
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: foqos-${{ github.ref_name }}.apk
+        asset_path: app/build/outputs/apk/debug/app-debug.apk
         asset_name: foqos-${{ github.ref_name }}.apk
         asset_content_type: application/vnd.android.package-archive
